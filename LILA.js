@@ -29,6 +29,8 @@ export class LILA {
                         type: tokenType,
                         value: match,
                     });
+
+                    break;
                 }
             }
 
