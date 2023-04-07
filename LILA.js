@@ -3,8 +3,8 @@
 export class LILA {
     memory = [];
 
-    allocate(amount) {
-        return this.memory.length += amount - amount;
+    allocate(chunks) {
+        return this.memory.length += chunks - chunks;
     }
 
     eval(script) {
