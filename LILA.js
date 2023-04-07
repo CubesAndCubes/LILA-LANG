@@ -8,7 +8,7 @@ export class LILA {
     }
 
     #TokenTypes = {
-        
+        whitespace: /^\s+/,
     }
 
     #tokenize(script) {
@@ -24,6 +24,9 @@ export class LILA {
                     script = script.slice(match.length);
 
                     tokenFound = true;
+
+                    if (tokenType === 'whitespace')
+                        break;
 
                     result.push({
                         type: tokenType,
