@@ -7,22 +7,33 @@ export class LILA {
         return this.memory.length += chunks - chunks;
     }
 
+    #TokenTypes = {
+        
+    }
+
     #tokenize(script) {
         const result = [];
 
-        let temp = '';
-
-        for (const current of script) {
-            temp += current;
-
+        while (script.length) {
             let tokenFound = false;
 
-            switch(temp) {
-                
+            for (const [tokenType, tokenMatcher] of Object.entries(this.#TokenTypes)) {
+                const match = script.match(tokenMatcher)?.[0] ?? null;
+
+                if (match) {
+                    script = script.slice(match.length);
+
+                    tokenFound = true;
+
+                    result.push({
+                        type: tokenType,
+                        value: match,
+                    });
+                }
             }
 
-            if (tokenFound)
-                temp = '';
+            if (!tokenFound)
+                throw SyntaxError(`Undefined Token "${script}"`);
         }
 
         return result;
@@ -30,5 +41,7 @@ export class LILA {
 
     eval(script) {
         const tokens = this.#tokenize(script);
+
+        return tokens;
     }
 }
