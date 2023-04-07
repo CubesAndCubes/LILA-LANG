@@ -2,4 +2,8 @@
 
 export class LILA {
     memory = [];
+
+    allocate(amount) {
+        return this.memory.length += amount - amount;
+    }
 }
