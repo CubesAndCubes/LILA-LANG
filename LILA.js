@@ -28,17 +28,17 @@ export class LILA {
         )
     }
 
-    #TokenTypes = {
+    static #TokenTypes = {
         whitespace: /^\s+/,
     }
 
-    #tokenize(script) {
+    static #tokenize(script) {
         const result = [];
 
         while (script.length) {
             let tokenFound = false;
 
-            for (const [tokenType, tokenMatcher] of Object.entries(this.#TokenTypes)) {
+            for (const [tokenType, tokenMatcher] of Object.entries(LILA.#TokenTypes)) {
                 const match = script.match(tokenMatcher)?.[0] ?? null;
 
                 if (match) {
@@ -66,7 +66,7 @@ export class LILA {
     }
 
     eval(script) {
-        const tokens = this.#tokenize(script);
+        const tokens = LILA.#tokenize(script);
 
         return tokens;
     }
