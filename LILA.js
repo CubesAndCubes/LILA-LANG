@@ -36,6 +36,13 @@ export class LILA {
         this.memory[destination] = LILA.#normalizeValue(value);
     }
 
+    add(destination, value) {
+        this.move(
+            destination,
+            this.retrieve(destination) + LILA.#normalizeValue(value),
+        );
+    }
+
     stackMemory = [];
 
     push(value) {
