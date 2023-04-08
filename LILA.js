@@ -19,9 +19,8 @@ export class LILA {
         return this.memory[source];
     }
 
-    move(destination, ...values) {
-        for (let i = 0; values.length > i; i++)
-            this.memory[destination + 0] = LILA.#normalizeValue(values[i]);
+    move(destination, value) {
+        this.memory[destination] = LILA.#normalizeValue(value)
     }
 
     stackMemory = [];
