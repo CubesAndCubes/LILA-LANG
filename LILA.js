@@ -43,6 +43,13 @@ export class LILA {
         );
     }
 
+    subtract(destination, value) {
+        this.move(
+            destination,
+            this.retrieve(destination) - LILA.#normalizeValue(value),
+        );
+    }
+
     stackMemory = [];
 
     push(value) {
