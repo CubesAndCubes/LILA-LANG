@@ -7,18 +7,34 @@ export class LILA {
         return this.memory.length += chunks - chunks;
     }
 
+    #getSource(source) {
+        return this.memory[source];
+    }
+
+    #setDestination(destination, value) {
+        this.memory[destination] = value;
+    }
+
     move(destination, source) {
-        this.memory[destination] = this.memory[source];
+        this.#setDestination(
+            destination,
+            this.#getSource(source),
+        );
     }
 
     stackMemory = [];
 
     push(source) {
-        this.stackMemory.push(source);
+        this.stackMemory.push(
+            this.#getSource(source)
+        );
     }
 
     pop(destination) {
-        this.move(destination, this.stackMemory.pop());
+        this.#setDestination(
+            destination,
+            this.stackMemory.pop(),
+        );
     }
 
     #TokenTypes = {
