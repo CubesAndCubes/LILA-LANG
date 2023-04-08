@@ -7,6 +7,16 @@ export class LILA {
         return this.memory.length += chunks - chunks;
     }
 
+    stackMemory = [];
+
+    push(value) {
+        this.stackMemory.push(value);
+    }
+
+    pop() {
+        return this.stackMemory.pop();
+    }
+
     #TokenTypes = {
         whitespace: /^\s+/,
     }
