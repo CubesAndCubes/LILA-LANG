@@ -12,12 +12,15 @@ export class LILA {
     flags = {
         zf: false,
         sf: false,
+        if: false,
     };
 
     #adjustFlags(value) {
         this.flags.zf = 0 === value;
 
         this.flags.sf = 0 > value;
+
+        this.flags.if = Number.isInteger(value);
 
         return value;
     }
