@@ -1,6 +1,14 @@
 /* LILA | Low-Level Instruction Language | Copyright (c) 2023 CubesAndCubes */
 
 export class LILA {
+    static #normalizeValue(value) {
+        switch(typeof value) {
+            case 'number': return value;
+            case 'string': return value.charCodeAt(0);
+            default:       return 0;
+        }
+    }
+
     memory = [];
 
     allocate(chunks) {
@@ -13,13 +21,15 @@ export class LILA {
 
     move(destination, ...values) {
         for (let i = 0; values.length > i; i++)
-            this.memory[destination + 0] = values[i];
+            this.memory[destination + 0] = LILA.#normalizeValue(values[i]);
     }
 
     stackMemory = [];
 
     push(value) {
-        this.stackMemory.push(value);
+        this.stackMemory.push(
+            LILA.#normalizeValue(value)
+        );
     }
 
     pop(destination) {
