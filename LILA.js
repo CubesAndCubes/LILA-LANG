@@ -9,6 +9,19 @@ export class LILA {
         }
     }
 
+    flags = {
+        zf: false,
+        sf: false,
+    };
+
+    #adjustFlags(value) {
+        this.flags.zf = 0 === value;
+
+        this.flags.sf = 0 > value;
+
+        return value;
+    }
+
     registers = {
         areg: 0,
         breg: 0,
@@ -39,28 +52,36 @@ export class LILA {
     add(destination, value, value2 = null) {
         this.move(
             destination,
-            (value2 ?? this.retrieve(destination)) + LILA.#normalizeValue(value),
+            this.#adjustFlags(
+                (value2 ?? this.retrieve(destination)) + LILA.#normalizeValue(value)
+            ),
         );
     }
 
     subtract(destination, value) {
         this.move(
             destination,
-            this.retrieve(destination) - LILA.#normalizeValue(value),
+            this.#adjustFlags(
+                this.retrieve(destination) - LILA.#normalizeValue(value)
+            ),
         );
     }
 
     multiply(destination, value, value2 = null) {
         this.move(
             destination,
-            (value2 ?? this.retrieve(destination)) * LILA.#normalizeValue(value),
+            this.#adjustFlags(
+                (value2 ?? this.retrieve(destination)) * LILA.#normalizeValue(value)
+            ),
         );
     }
 
     divide(destination, value) {
         this.move(
             destination,
-            this.retrieve(destination) / LILA.#normalizeValue(value),
+            this.#adjustFlags(
+                this.retrieve(destination) / LILA.#normalizeValue(value)
+            ),
         );
     }
 
