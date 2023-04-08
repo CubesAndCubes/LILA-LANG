@@ -10,9 +10,9 @@ export class LILA {
     }
 
     flags = {
-        zf: false,
-        sf: false,
-        if: false,
+        zf: false, // Zero Flag
+        sf: false, // Sign Flag
+        if: false, // Integrity/Integer Flag
     };
 
     #adjustFlags(value) {
@@ -26,10 +26,10 @@ export class LILA {
     }
 
     registers = {
-        areg: 0,
-        breg: 0,
-        creg: 0,
-        dreg: 0, 
+        areg: 0, // Accumulator Register
+        breg: 0, // Base Register
+        creg: 0, // Counter Register
+        dreg: 0, // Data Register
     };
 
     memory = [];
