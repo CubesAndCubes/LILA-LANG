@@ -9,6 +9,13 @@ export class LILA {
         }
     }
 
+    registers = {
+        areg: 0,
+        breg: 0,
+        creg: 0,
+        dreg: 0, 
+    };
+
     memory = [];
 
     allocate(chunks) {
@@ -16,11 +23,17 @@ export class LILA {
     }
 
     retrieve(source) {
+        if (source in this.registers)
+            return this.registers[source];
+
         return this.memory[source];
     }
 
     move(destination, value) {
-        this.memory[destination] = LILA.#normalizeValue(value)
+        if (destination in this.registers)
+            return void (this.registers[destination] = LILA.#normalizeValue(value));
+
+        this.memory[destination] = LILA.#normalizeValue(value);
     }
 
     stackMemory = [];
