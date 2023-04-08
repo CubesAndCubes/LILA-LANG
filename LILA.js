@@ -50,10 +50,10 @@ export class LILA {
         );
     }
 
-    multiply(destination, value) {
+    multiply(destination, value, value2 = null) {
         this.move(
             destination,
-            this.retrieve(destination) * LILA.#normalizeValue(value),
+            (value2 ?? this.retrieve(destination)) * LILA.#normalizeValue(value),
         );
     }
 
