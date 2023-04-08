@@ -36,10 +36,10 @@ export class LILA {
         this.memory[destination] = LILA.#normalizeValue(value);
     }
 
-    add(destination, value) {
+    add(destination, value, value2 = null) {
         this.move(
             destination,
-            this.retrieve(destination) + LILA.#normalizeValue(value),
+            (value2 ?? this.retrieve(destination)) + LILA.#normalizeValue(value),
         );
     }
 
