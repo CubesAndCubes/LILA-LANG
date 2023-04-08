@@ -11,8 +11,9 @@ export class LILA {
         return this.memory[source];
     }
 
-    move(destination, value) {
-        this.memory[destination] = value;
+    move(destination, ...values) {
+        for (let i = 0; values.length > i; i++)
+            this.memory[destination + 0] = values[i];
     }
 
     stackMemory = [];
