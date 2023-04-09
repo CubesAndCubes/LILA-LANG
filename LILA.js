@@ -25,13 +25,15 @@ export class LILA {
         return value;
     }
 
-    memory = [];
+    memory = {};
+
+    allocationPointer = 0;
 
     allocate(chunks) {
-        const pointer = this.memory.length;
+        const pointer = this.allocationPointer;
 
         for (let i = 0; chunks > i; i++)
-            this.memory.push(0);
+            this.memory[this.allocationPointer++] = 0;
 
         return pointer;
     }
@@ -41,12 +43,12 @@ export class LILA {
         breg: 0, // Base Register
         creg: 0, // Counter Register
         dreg: 0, // Data Register
-        sreg: this.allocate(1000), // Stack (Pointer) Register
+        sreg: -1, // Stack (Pointer) Register
     };
 
     push(value) {
         this.move(
-            this.registers.sreg++,
+            this.registers.sreg--,
             LILA.#normalizeValue(value),
         );
     }
@@ -54,7 +56,7 @@ export class LILA {
     pop(destination) {
         this.move(
             destination,
-            this.retrieve(--this.registers.sreg),
+            this.retrieve(++this.registers.sreg),
         );
     }
 
