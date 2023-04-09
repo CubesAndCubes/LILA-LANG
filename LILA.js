@@ -25,17 +25,37 @@ export class LILA {
         return value;
     }
 
+    memory = [];
+
+    allocate(chunks) {
+        const pointer = this.memory.length;
+
+        for (let i = 0; chunks > i; i++)
+            this.memory.push(0);
+
+        return pointer;
+    }
+
     registers = {
         areg: 0, // Accumulator Register
         breg: 0, // Base Register
         creg: 0, // Counter Register
         dreg: 0, // Data Register
+        sreg: this.allocate(1000), // Stack (Pointer) Register
     };
 
-    memory = [];
+    push(value) {
+        this.move(
+            this.registers.sreg++,
+            LILA.#normalizeValue(value),
+        );
+    }
 
-    allocate(chunks) {
-        return this.memory.length += chunks - chunks;
+    pop(destination) {
+        this.move(
+            destination,
+            this.retrieve(--this.registers.sreg),
+        );
     }
 
     retrieve(source) {
@@ -86,21 +106,6 @@ export class LILA {
                 this.retrieve(destination) / LILA.#normalizeValue(value)
             ),
         );
-    }
-
-    stackMemory = [];
-
-    push(value) {
-        this.stackMemory.push(
-            LILA.#normalizeValue(value)
-        );
-    }
-
-    pop(destination) {
-        this.move(
-            destination,
-            this.stackMemory.pop(),
-        )
     }
 
     static #TokenTypes = {
