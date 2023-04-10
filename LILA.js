@@ -148,6 +148,9 @@ export class LILA {
                     if (tokenType === 'whitespace')
                         break;
 
+                    if (tokenType === 'comment')
+                        break;
+
                     result.push({
                         type: tokenType,
                         value: match,
