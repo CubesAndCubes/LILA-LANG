@@ -71,10 +71,8 @@ export class LILA {
         if (destination in this.registers)
             return void (this.registers[destination] = LILA.#normalizeValue(value));
 
-        destination = Number(destination);
-
-        if (!isNaN(destination))
-            return void (this.memory[parseInt(destination)] = LILA.#normalizeValue(value));
+        if (!isNaN(Number(destination)))
+            return void (this.memory[parseInt(Number(destination))] = LILA.#normalizeValue(value));
 
         throw SyntaxError(`Invalid write destination (${destination})`);
     }
