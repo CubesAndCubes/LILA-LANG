@@ -124,6 +124,7 @@ export class LILA {
 
     static #TokenTypes = {
         whitespace: /^\s+/,
+        identifier: /^[_A-Za-z][_A-Za-z\d]*/,
     }
 
     static #tokenize(script) {
