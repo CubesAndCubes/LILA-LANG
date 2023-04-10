@@ -123,7 +123,8 @@ export class LILA {
     }
 
     static #TokenTypes = {
-        whitespace: /^\s+/,
+        whitespace: /^[^\S\n]+/,
+        newline: /^\n\s*/,
         comment: /^;.*/,
         number: /^\d+(\.\d+)?/,
         comma: /^,/,
