@@ -127,6 +127,7 @@ export class LILA {
         newline: /^\n\s*/,
         comment: /^;.*/,
         number: /^\d+(\.\d+)?/,
+        string: /^("[^"]*")|('[^']*')/,
         comma: /^,/,
         colon: /^:/,
         identifier: /^[_A-Za-z][_A-Za-z\d]*/,
