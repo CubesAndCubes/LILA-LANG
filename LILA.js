@@ -140,7 +140,7 @@ export class LILA {
             let tokenFound = false;
 
             for (const [tokenType, tokenMatcher] of Object.entries(LILA.#TokenTypes)) {
-                const match = script.match(tokenMatcher)?.[0] ?? null;
+                let match = script.match(tokenMatcher)?.[0] ?? null;
 
                 if (match) {
                     script = script.slice(match.length);
@@ -152,6 +152,9 @@ export class LILA {
 
                     if (tokenType === 'comment')
                         break;
+
+                    if (tokenType === 'string')
+                        match = match.slice(1, -1);
 
                     result.push({
                         type: tokenType,
