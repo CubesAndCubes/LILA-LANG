@@ -125,6 +125,7 @@ export class LILA {
     static #TokenTypes = {
         whitespace: /^\s+/,
         comment: /^;.*/,
+        number: /^\d+(\.\d+)?/,
         comma: /^,/,
         colon: /^:/,
         identifier: /^[_A-Za-z][_A-Za-z\d]*/,
