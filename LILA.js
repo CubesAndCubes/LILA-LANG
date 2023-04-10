@@ -159,6 +159,8 @@ export class LILA {
         return result;
     }
 
+    #code = [];
+
     constructor(script) {
         const tokens = LILA.#tokenize(script);
     }
