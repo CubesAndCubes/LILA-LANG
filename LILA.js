@@ -128,6 +128,7 @@ export class LILA {
         comment: /^;.*/,
         number: /^\d+(\.\d+)?/,
         string: /^("[^"]*")|^('[^']*')/,
+        pseudoinstruction: /^(CNST|DEFC|RESC)(?=[^A-Z]|$)/,
         instruction: /^(MOV|ADD|SUB|MUL|DIV|CMP|CALL|RET|PUSH|POP|EXIT|JMP)(?=[^A-Z]|$)/i,
         comma: /^,/,
         colon: /^:/,
