@@ -131,6 +131,7 @@ export class LILA {
         comma: /^,/,
         colon: /^:/,
         dollar: /^\$/,
+        operator: /^(\+|-|\*|\/)/,
         identifier: /^[_A-Za-z][_A-Za-z\d]*/,
     }
 
