@@ -64,7 +64,10 @@ export class LILA {
         if (source in this.registers)
             return this.registers[source];
 
-        return this.memory[source];
+        if (!isNaN(Number(source)))
+            return this.memory[parseInt(Number(source))];
+        
+        throw SyntaxError(`Invalid retrieval source (${source})`);
     }
 
     move(destination, value) {
