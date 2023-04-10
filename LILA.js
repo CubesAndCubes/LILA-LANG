@@ -162,6 +162,9 @@ export class LILA {
                     if (tokenType === 'string')
                         match = match.slice(1, -1);
 
+                    if (tokenType === 'number')
+                        match = Number(match);
+
                     result.push({
                         type: tokenType,
                         value: match,
