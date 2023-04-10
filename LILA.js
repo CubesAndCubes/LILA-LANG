@@ -98,6 +98,12 @@ export class LILA {
         );
     }
 
+    compare(value, value2) {
+        this.#adjustFlags(
+            LILA.#normalizeValue(value) - LILA.#normalizeValue(value2)
+        );
+    }
+
     multiply(destination, value, value2 = null) {
         this.move(
             destination,
