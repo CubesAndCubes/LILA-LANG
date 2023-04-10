@@ -159,9 +159,7 @@ export class LILA {
         return result;
     }
 
-    eval(script) {
+    constructor(script) {
         const tokens = LILA.#tokenize(script);
-
-        return tokens;
     }
 }
