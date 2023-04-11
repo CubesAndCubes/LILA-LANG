@@ -249,6 +249,15 @@ export class LILA {
 
     #code = [];
 
+    exec() {
+        this.codePointer = 0;
+
+        while(this.#code.length > this.codePointer)
+            this.#code[this.codePointer++]();
+
+        return this.registers.areg;
+    }
+
     constructor(script) {
         const tokens = LILA.#tokenize(
             this.#preprocess(script)
