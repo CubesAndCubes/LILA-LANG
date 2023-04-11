@@ -269,6 +269,46 @@ export class LILA {
                 }
             }
 
+            if (tokens[i].type === 'identifier') {
+                switch(tokens[i].value.toUpperCase()) {
+                    case 'MOV':
+                        const destination = tokens[i + 1];
+
+                        if (!['identifier', 'address'].includes(destination.type))
+                            break;
+
+                        if (tokens[i + 2].type !== 'comma')
+                            break;
+                        
+                        const source = tokens[i + 3];
+
+                        if (!['identifier', 'address', 'number'].includes(source.type))
+                            break;
+
+                        if (tokens[i + 4].type !== 'newline')
+                            break;
+
+                        if (source.type === 'number')
+                            this.#code.push(() => {
+                                this.move(
+                                    destination.value,
+                                    source.value,
+                                );
+                            });
+                        else
+                            this.#code.push(() => {
+                                this.move(
+                                    destination.value,
+                                    this.retrieve(source.value),
+                                );
+                            });
+
+                        i += 5;
+
+                        continue;
+                }
+            }
+
             throw SyntaxError('Unexpected series of tokens.');
         }
     }
