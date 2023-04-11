@@ -219,6 +219,9 @@ export class LILA {
 
                     if (tokenType === 'whitespace')
                         break;
+                    
+                    if (tokenType === 'jumplabel')
+                        match = match.slice(0, -1);
 
                     if (tokenType === 'address')
                         match = match.slice(1, -1).trim();
