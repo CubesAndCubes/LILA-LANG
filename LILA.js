@@ -220,13 +220,7 @@ export class LILA {
                     if (tokenType === 'whitespace')
                         break;
 
-                    if (tokenType === 'comment')
-                        break;
-
-                    if (tokenType === 'string')
-                        match = match.slice(1, -1);
-
-                    if (tokenType === 'number')
+                    if (['number', 'address'].includes(tokenType))
                         match = Number(match);
 
                     result.push({
