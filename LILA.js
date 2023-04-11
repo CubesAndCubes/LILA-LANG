@@ -181,7 +181,7 @@ export class LILA {
 
             // Store in label
 
-            script[i] = script[i].replace(/^[^\S\n]*([_A-Za-z][_A-Za-z\d]*):(.*)$/gm, (match, identifier, content) => {
+            script[i] = script[i].replace(/^[^\S\n]*([_A-Za-z][_A-Za-z\d]*):\s*(\d+(\.\d+)?)\s*$/gm, (match, identifier, content) => {
                 content = content.trim();
 
                 labels[identifier] = content;
