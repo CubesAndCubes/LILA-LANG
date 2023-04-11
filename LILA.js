@@ -245,6 +245,8 @@ export class LILA {
     #code = [];
 
     constructor(script) {
-        const tokens = LILA.#tokenize(script);
+        const tokens = LILA.#tokenize(
+            this.#preprocess(script)
+        );
     }
 }
