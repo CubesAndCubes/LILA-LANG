@@ -196,7 +196,7 @@ export class LILA {
     static #TokenTypes = {
         whitespace: /^[^\S\n]+/,
         newline: /^\n\s*/,
-        address: /^(?<=\[[^\S\n]*)\d+(\.\d+)?(?=[^\S\n]*\])/,
+        address: /^\[[^\S\n]*\d+(\.\d+)?[^\S\n]*\]/,
         number: /^\d+(\.\d+)?/,
         comma: /^,/,
         jumplabel: /^[_A-Za-z][_A-Za-z\d]*:/,
@@ -219,6 +219,9 @@ export class LILA {
 
                     if (tokenType === 'whitespace')
                         break;
+
+                    if (tokenType === 'address')
+                        match = match.slice(1, -1).trim();
 
                     if (['number', 'address'].includes(tokenType))
                         match = Number(match);
