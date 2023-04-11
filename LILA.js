@@ -242,6 +242,8 @@ export class LILA {
         return result;
     }
 
+    codePointer = 0;
+
     #code = [];
 
     constructor(script) {
