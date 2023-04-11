@@ -1,7 +1,7 @@
 foo:      RESC 1               ; label 'foo' = address to 1 chunk of reserved memory
 
 hello:    DEFC "Hello, World!" ; label 'hello' = address to 13 chunks of pre-defined memory
-helloLen: CNST $ - hello       ; label 'helloLen' = constant result of current memory length subtracted by value of 'hello'
+helloLen: $ - hello            ; label 'helloLen' = constant result of current memory length subtracted by value of 'hello'
 
 _start:                        ; label '_start' = code address
 
