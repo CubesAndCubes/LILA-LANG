@@ -140,6 +140,71 @@ export class LILA {
         );
     }
 
+    #preprocess(script) {
+        // remove comments
+
+        script = script.replace(/;.*/g, '');
+
+        // string expressions to numbers arrays
+
+        script = script.replace(/("[^"]+")|('[^']+')/g, match => match.slice(1, -1).split('').map(char => char.charCodeAt(0)).join(','));
+
+        // make splim at separate
+
+        script = script.match(/\S(.*\S)?/g);
+
+        let allocationPointer = 0;
+
+        const labels = {};
+
+        for (let i = 0; script.length > i; i++) {
+            // evaluate dollar signs ($)
+
+            script[i] = script[i].replace(/\$/g, allocationPointer);
+
+            // evaluate labels
+
+            script[i] = script[i].replace(/[_A-Za-z][_A-Za-z\d]*(?!.*:)/g, identifier => labels[identifier] ?? identifier);
+
+            // evaluate arithmetic expressions
+
+            script[i] = script[i].replace(/([()]+[^\S\n]*)?(-[^\S\n]*)?\d+(\.\d+)?([^\S\n]*[()]+)?([^\S\n]*[+\-*/%][^\S\n]*([()]+[^\S\n]*)?(-[^\S\n]*)?\d+(\.\d+)?([^\S\n]*[()]+)?)+/g, expression => eval(expression));
+
+            // REServe Chunks (pesudo instruction)
+
+            script[i] = script[i].replace(/RESC[^\S\n]+(\d+(\.\d+)?)/gi, (match, chunks) => {
+                const pointer = allocationPointer;
+
+                allocationPointer += Number(parseInt(chunks));
+
+                return pointer;
+            });
+
+            // DEFine Chunks (pseudo instruction)
+
+            script[i] = script[i].replace(/DEFC[^\S\n]+(\d+(\.\d+)?([^\S\n]*,[^\S\n]*\d+(\.\d+)?)*)/gi, (match, chunks) => {
+                const pointer = allocationPointer;
+
+                for (const value of chunks.match(/\d+(\.\d+)?/g) ?? [])
+                    this.move(allocationPointer++, Number(value));
+
+                return pointer;
+            });
+
+            // Store in label
+
+            script[i] = script[i].replace(/^[^\S\n]*([_A-Za-z][_A-Za-z\d]*):(.*)$/gm, (match, identifier, content) => {
+                content = content.trim();
+
+                labels[identifier] = content;
+
+                return '';
+            });
+        }
+
+        return script.join('\n');
+    }
+
     static #TokenTypes = {
         whitespace: /^[^\S\n]+/,
         newline: /^\n\s*/,
