@@ -190,7 +190,7 @@ export class LILA {
             });
         }
 
-        return script.join('\n');
+        return script.join('\n').trim();
     }
 
     static #TokenTypes = {
