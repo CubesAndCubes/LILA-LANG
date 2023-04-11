@@ -27,17 +27,6 @@ export class LILA {
 
     memory = {};
 
-    allocationPointer = 0;
-
-    allocate(chunks) {
-        const pointer = this.allocationPointer;
-
-        for (let i = 0; chunks > i; i++)
-            this.memory[this.allocationPointer++] = 0;
-
-        return pointer;
-    }
-
     registers = {
         areg: 0, // Accumulator Register
         breg: 0, // Base Register
