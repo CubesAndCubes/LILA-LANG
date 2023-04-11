@@ -2,11 +2,10 @@
 
 export class LILA {
     static #normalizeValue(value) {
-        switch(typeof value) {
-            case 'number': return value;
-            case 'string': return value.charCodeAt(0);
-            default:       return 0;
-        }
+        if (typeof value === 'number')
+            return value;
+
+        return 0;
     }
 
     flags = {
