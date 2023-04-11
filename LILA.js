@@ -89,6 +89,15 @@ export class LILA {
         );
     }
 
+    increment(destination) {
+        this.move(
+            destination,
+            this.#adjustFlags(
+                this.retrieve(destination) + 1
+            ),
+        );
+    }
+
     subtract(destination, value) {
         this.move(
             destination,
