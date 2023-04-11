@@ -253,5 +253,26 @@ export class LILA {
         const tokens = LILA.#tokenize(
             this.#preprocess(script)
         );
+
+        console.log(tokens);
+
+        const jumpAdresses = {};
+
+        for (let i = 0; tokens.length > i;) {
+            switch(tokens[i].type) {
+                case 'jumplabel':
+                    if (tokens[i + 1].type === 'newline') {
+                        jumpAdresses[tokens[i].value] = this.#code.length - 1;
+
+                        i += 2;
+
+                        continue;
+                    }
+
+                    break;
+            }
+
+            throw SyntaxError('Unexpected series of tokens.');
+        }
     }
 }
