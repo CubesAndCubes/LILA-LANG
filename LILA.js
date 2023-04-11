@@ -107,6 +107,15 @@ export class LILA {
         );
     }
 
+    decrement(destination) {
+        this.move(
+            destination,
+            this.#adjustFlags(
+                this.retrieve(destination) - 1
+            ),
+        );
+    }
+
     compare(value, value2) {
         this.#adjustFlags(
             LILA.#normalizeValue(value) - LILA.#normalizeValue(value2)
