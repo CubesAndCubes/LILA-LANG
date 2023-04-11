@@ -259,17 +259,14 @@ export class LILA {
         const jumpAdresses = {};
 
         for (let i = 0; tokens.length > i;) {
-            switch(tokens[i].type) {
-                case 'jumplabel':
-                    if (tokens[i + 1].type === 'newline') {
-                        jumpAdresses[tokens[i].value] = this.#code.length - 1;
+            if (tokens[i].type === 'jumplabel') {
+                if (tokens[i + 1].type === 'newline') {
+                    jumpAdresses[tokens[i].value] = this.#code.length - 1;
 
-                        i += 2;
+                    i += 2;
 
-                        continue;
-                    }
-
-                    break;
+                    continue;
+                }
             }
 
             throw SyntaxError('Unexpected series of tokens.');
