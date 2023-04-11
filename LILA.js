@@ -196,17 +196,10 @@ export class LILA {
     static #TokenTypes = {
         whitespace: /^[^\S\n]+/,
         newline: /^\n\s*/,
-        comment: /^;.*/,
+        address: /^(?<=\[[^\S\n]*)\d+(\.\d+)?(?=[^\S\n]*\])/,
         number: /^\d+(\.\d+)?/,
-        string: /^("[^"]*")|^('[^']*')/,
-        pseudoinstruction: /^(CNST|DEFC|RESC)(?=[^A-Z]|$)/,
-        instruction: /^(MOV|ADD|SUB|MUL|DIV|CMP|CALL|RET|PUSH|POP|EXIT|JMP)(?=[^A-Z]|$)/i,
         comma: /^,/,
-        colon: /^:/,
-        dollar: /^\$/,
-        operator: /^(\+|-|\*|\/)/,
-        squareopen: /^\[/,
-        squareclose: /^\]/,
+        jumplabel: /^[_A-Za-z][_A-Za-z\d]*:/,
         identifier: /^[_A-Za-z][_A-Za-z\d]*/,
     }
 
