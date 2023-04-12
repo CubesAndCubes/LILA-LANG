@@ -530,6 +530,14 @@ export class LILA {
                         });
 
                         continue;
+                    case 'EXIT':
+                        readToken(['newline']);
+
+                        this.#code.push(() => {
+                            this.codePointer = this.#code.length;
+                        });
+
+                        continue;
                 }
             }
 
