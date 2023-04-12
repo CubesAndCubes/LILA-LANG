@@ -162,7 +162,7 @@ export class LILA {
 
         script = script.replace(/("[^"]+")|('[^']+')/g, match => match.slice(1, -1).split('').map(char => char.charCodeAt(0)).join(','));
 
-        // make splim at separate
+        // make slim and separate lines
 
         script = script.match(/\S(.*\S)?/g);
 
