@@ -296,6 +296,8 @@ export class LILA {
             if (peekToken().type === 'identifier') {
                 let destination;
                 let source;
+                let value1;
+                let value2;
 
                 switch (readToken(['identifier']).value.toUpperCase()) {
                     case 'MOV':
@@ -414,6 +416,45 @@ export class LILA {
                                 this.multiply(
                                     destination.value,
                                     this.retrieve(source.value),
+                                );
+                            });
+
+                        continue;
+                    case 'CMP':
+                        value1 = readToken(['identifier', 'address', 'number']);
+
+                        readToken(['comma']);
+
+                        value2 = readToken(['identifier', 'address', 'number']);
+
+                        readToken(['newline']);
+
+                        if (value1.type === 'number' && value2.type === 'number')
+                            this.#code.push(() => {
+                                this.compare(
+                                    value1.value,
+                                    value2.value,
+                                );
+                            });
+                        else if (value1.type === 'number' && value2.type !== 'number')
+                            this.#code.push(() => {
+                                this.compare(
+                                    value1.value,
+                                    this.retrieve(value2.value),
+                                );
+                            });
+                        else if (value1.type !== 'number' && value2.type === 'number')
+                            this.#code.push(() => {
+                                this.compare(
+                                    this.retrieve(value1.value),
+                                    value2.value,
+                                );
+                            });
+                        else
+                            this.#code.push(() => {
+                                this.compare(
+                                    this.retrieve(value1.value),
+                                    this.retrieve(value2.value),
                                 );
                             });
 
