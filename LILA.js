@@ -272,34 +272,37 @@ export class LILA {
         for (let i = 0; tokens.length > i;) {
             const peekToken = (offset = 0) => tokens[i + offset];
 
-            if (peekToken().type === 'jumplabel') {
-                if (peekToken(1).type === 'newline') {
-                    jumpAdresses[peekToken().value] = this.#code.length;
+            const readToken = types => {
+                const nextToken = peekToken();
 
-                    i += 2;
+                if (!types.includes(nextToken.type))
+                    throw SyntaxError(`Unexpected token; Expected (${types}), got (${nextToken.type})`);
+
+                i++;
+
+                return nextToken;
+            };
+
+            if (peekToken().type === 'jumplabel') {
+                const labelToken = readToken(['jumplabel']);
+
+                if (readToken(['newline'])) {
+                    jumpAdresses[labelToken.value] = this.#code.length;
 
                     continue;
                 }
             }
 
             if (peekToken().type === 'identifier') {
-                switch (peekToken().value.toUpperCase()) {
+                switch (readToken(['identifier']).value.toUpperCase()) {
                     case 'MOV':
-                        const destination = peekToken(1);
+                        const destination = readToken(['identifier', 'address']);
 
-                        if (!['identifier', 'address'].includes(destination.type))
-                            break;
-
-                        if (peekToken(2).type !== 'comma')
-                            break;
+                        readToken(['comma']);
                         
-                        const source = peekToken(3);
+                        const source = readToken(['identifier', 'address', 'number']);
 
-                        if (!['identifier', 'address', 'number'].includes(source.type))
-                            break;
-
-                        if (peekToken(4).type !== 'newline')
-                            break;
+                        readToken(['newline']);
 
                         if (source.type === 'number')
                             this.#code.push(() => {
@@ -315,8 +318,6 @@ export class LILA {
                                     this.retrieve(source.value),
                                 );
                             });
-
-                        i += 5;
 
                         continue;
                 }
