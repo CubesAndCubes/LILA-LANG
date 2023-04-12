@@ -293,8 +293,6 @@ export class LILA {
             this.#preprocess(script)
         );
 
-        console.log(tokens);
-
         const jumpAdresses = {
             '_start': this.#codeEntry
         };
