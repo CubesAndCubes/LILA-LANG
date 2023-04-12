@@ -393,6 +393,31 @@ export class LILA {
                             });
 
                         continue;
+                    case 'MUL':
+                        destination = readToken(['identifier', 'address']);
+
+                        readToken(['comma']);
+
+                        source = readToken(['identifier', 'address', 'number']);
+
+                        readToken(['newline']);
+
+                        if (source.type === 'number')
+                            this.#code.push(() => {
+                                this.multiply(
+                                    destination.value,
+                                    source.value,
+                                );
+                            });
+                        else
+                            this.#code.push(() => {
+                                this.multiply(
+                                    destination.value,
+                                    this.retrieve(source.value),
+                                );
+                            });
+
+                        continue;
                 }
             }
 
