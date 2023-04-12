@@ -333,6 +333,16 @@ export class LILA {
                         });
 
                         continue;
+                    case 'DEC':
+                        destination = readToken(['identifier', 'address']);
+
+                        readToken(['newline']);
+
+                        this.#code.push(() => {
+                            this.decrement(destination.value);
+                        });
+
+                        continue;
                 }
             }
 
