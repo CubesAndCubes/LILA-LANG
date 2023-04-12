@@ -31,14 +31,14 @@ export class LILA {
         breg: 0, // Base Register
         creg: 0, // Counter Register
         dreg: 0, // Data Register
-        sreg: -1, // Stack (Pointer) Register
+        sreg: 0, // Stack (Pointer) Register
     };
 
     push(value) {
         this.move(
             {
                 type: 'address',
-                value: this.registers.sreg--,
+                value: --this.registers.sreg,
             },
             LILA.#normalizeValue(value),
         );
@@ -49,7 +49,7 @@ export class LILA {
             destination,
             this.retrieve({
                 type: 'address',
-                value: ++this.registers.sreg,
+                value: this.registers.sreg++,
             }),
         );
     }
@@ -497,7 +497,7 @@ export class LILA {
                                 0,
                                 this.retrieve({
                                     type: 'address',
-                                    value: ++this.registers.sreg,
+                                    value: this.registers.sreg++,
                                 }),
                             );
                         });
