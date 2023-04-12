@@ -320,6 +320,20 @@ export class LILA {
                 return nextToken;
             };
 
+            const readJump = condition => {
+                const label = readToken(['identifier']);
+
+                readToken(['newline']);
+
+                this.#code.push(() => {
+                    if (!(label.value in jumpAdresses))
+                        throw SyntaxError(`Undefined jump label (${label.value}).`);
+
+                    if (condition())
+                        this.codePointer = jumpAdresses[label.value];
+                });
+            };
+
             if (peekToken().type === 'jumplabel') {
                 const labelToken = readToken(['jumplabel']);
 
@@ -471,20 +485,6 @@ export class LILA {
                         });
 
                         continue;
-                    case 'JMP':
-                    case 'JUMP':
-                        label = readToken(['identifier']);
-
-                        readToken(['newline']);
-
-                        this.#code.push(() => {
-                            if (!(label.value in jumpAdresses))
-                                throw SyntaxError(`Undefined jump label (${label.value}).`);
-
-                            this.codePointer = jumpAdresses[label.value];
-                        });
-
-                        continue;
                     case 'CALL':
                         label = readToken(['identifier']);
 
@@ -520,120 +520,45 @@ export class LILA {
                         });
 
                         continue;
+                    case 'JMP':
+                    case 'JUMP':
+                        readJump(() => true);
+
+                        continue;
                     case 'JE': // jump if equal
                     case 'JZ': // jump if zero
-                        label = readToken(['identifier']);
-
-                        readToken(['newline']);
-
-                        this.#code.push(() => {
-                            if (!(label.value in jumpAdresses))
-                                throw SyntaxError(`Undefined jump label (${label.value}).`);
-
-                            if (this.flags.zf)
-                                this.codePointer = jumpAdresses[label.value];
-                        });
+                        readJump(() => this.flags.zf);
 
                         continue;
                     case 'JNE': // jump if not equal
                     case 'JNZ': // jump if not zero
-                        label = readToken(['identifier']);
-
-                        readToken(['newline']);
-
-                        this.#code.push(() => {
-                            if (!(label.value in jumpAdresses))
-                                throw SyntaxError(`Undefined jump label (${label.value}).`);
-
-                            if (!this.flags.zf)
-                                this.codePointer = jumpAdresses[label.value];
-                        });
+                        readJump(() => !this.flags.zf);
 
                         continue;
                     case 'JS': // jump if sign
                     case 'JL': // jump if less
-                        label = readToken(['identifier']);
-
-                        readToken(['newline']);
-
-                        this.#code.push(() => {
-                            if (!(label.value in jumpAdresses))
-                                throw SyntaxError(`Undefined jump label (${label.value}).`);
-
-                            if (this.flags.sf)
-                                this.codePointer = jumpAdresses[label.value];
-                        });
+                        readJump(() => this.flags.sf);
 
                         continue;
                     case 'JNS': // jump if not sign
                     case 'JGE': // jump if greater or equal
-                        label = readToken(['identifier']);
-
-                        readToken(['newline']);
-
-                        this.#code.push(() => {
-                            if (!(label.value in jumpAdresses))
-                                throw SyntaxError(`Undefined jump label (${label.value}).`);
-
-                            if (!this.flags.sf)
-                                this.codePointer = jumpAdresses[label.value];
-                        });
+                        readJump(() => !this.flags.sf);
 
                         continue;
                     case 'JG': // jump if greater
-                        label = readToken(['identifier']);
-
-                        readToken(['newline']);
-
-                        this.#code.push(() => {
-                            if (!(label.value in jumpAdresses))
-                                throw SyntaxError(`Undefined jump label (${label.value}).`);
-
-                            if (!this.flags.sf && !this.flags.zf)
-                                this.codePointer = jumpAdresses[label.value];
-                        });
+                        readJump(() => !this.flags.sf && !this.flags.zf);
 
                         continue;
                     case 'JLE': // jump if less or equal
-                        label = readToken(['identifier']);
-
-                        readToken(['newline']);
-
-                        this.#code.push(() => {
-                            if (!(label.value in jumpAdresses))
-                                throw SyntaxError(`Undefined jump label (${label.value}).`);
-
-                            if (this.flags.sf || this.flags.zf)
-                                this.codePointer = jumpAdresses[label.value];
-                        });
+                        readJump(() => this.flags.sf || this.flags.zf);
 
                         continue;
                     case 'JI': // jump if integral
-                        label = readToken(['identifier']);
-
-                        readToken(['newline']);
-
-                        this.#code.push(() => {
-                            if (!(label.value in jumpAdresses))
-                                throw SyntaxError(`Undefined jump label (${label.value}).`);
-
-                            if (this.flags.if)
-                                this.codePointer = jumpAdresses[label.value];
-                        });
+                        readJump(() => this.flags.if);
 
                         continue;
                     case 'JNI': // jump if not integral
-                        label = readToken(['identifier']);
-
-                        readToken(['newline']);
-
-                        this.#code.push(() => {
-                            if (!(label.value in jumpAdresses))
-                                throw SyntaxError(`Undefined jump label (${label.value}).`);
-
-                            if (!this.flags.if)
-                                this.codePointer = jumpAdresses[label.value];
-                        });
+                        readJump(() => !this.flags.if);
 
                         continue;
                 }
