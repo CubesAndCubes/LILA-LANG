@@ -267,7 +267,9 @@ export class LILA {
 
         console.log(tokens);
 
-        const jumpAdresses = {};
+        const jumpAdresses = {
+            '_start': this.#codeEntry
+        };
 
         for (let i = 0; tokens.length > i;) {
             const peekToken = (offset = 0) => tokens[i + offset];
@@ -494,6 +496,6 @@ export class LILA {
             throw SyntaxError('Unexpected series of tokens.');
         }
 
-        this.#codeEntry = jumpAdresses['_start'] ?? 0;
+        this.#codeEntry = jumpAdresses['_start'];
     }
 }
