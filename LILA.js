@@ -110,11 +110,11 @@ export class LILA {
         );
     }
 
-    multiply(destination, value, value2 = null) {
+    multiply(destination, value) {
         this.move(
             destination,
             this.#adjustFlags(
-                (value2 ?? this.retrieve(destination)) * LILA.#normalizeValue(value)
+                this.retrieve(destination) * LILA.#normalizeValue(value)
             ),
         );
     }
