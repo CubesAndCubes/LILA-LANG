@@ -36,7 +36,10 @@ export class LILA {
 
     push(value) {
         this.move(
-            this.registers.sreg--,
+            {
+                type: 'address',
+                value: this.registers.sreg--,
+            },
             LILA.#normalizeValue(value),
         );
     }
@@ -44,28 +47,50 @@ export class LILA {
     pop(destination) {
         this.move(
             destination,
-            this.retrieve(++this.registers.sreg),
+            this.retrieve({
+                type: 'address',
+                value: ++this.registers.sreg,
+            }),
         );
     }
 
     retrieve(source) {
-        if (source in this.registers)
-            return this.registers[source] ?? 0;
+        switch(source.type) {
+            case 'address':
+                if (source.value in this.registers)
+                    source.value = this.registers[source.value] ?? 0;
 
-        if (!isNaN(Number(source)))
-            return this.memory[parseInt(Number(source))] ?? 0;
+                return this.memory[parseInt(source.value)] ?? 0;
+
+            case 'number':
+                return source.value;
+
+            case 'identifier':
+                if (source.value in this.registers)
+                    return this.registers[source.value] ?? 0;
+        }
         
-        throw SyntaxError(`Invalid retrieval source (${source})`);
+        throw SyntaxError(`Invalid retrieval source (${source.value})`);
     }
 
     move(destination, value) {
-        if (destination in this.registers)
-            return void (this.registers[destination] = LILA.#normalizeValue(value));
+        switch (destination.type) {
+            case 'address':
+                if (destination.value in this.registers)
+                    destination.value = this.registers[destination.value] ?? 0;
 
-        if (typeof destination === 'number')
-            return void (this.memory[parseInt(destination)] = LILA.#normalizeValue(value));
+                return void (
+                    this.memory[parseInt(destination.value)] = LILA.#normalizeValue(value)
+                );
 
-        throw SyntaxError(`Invalid write destination (${destination})`);
+            case 'identifier':
+                if (destination.value in this.registers)
+                    return void (
+                        this.registers[destination.value] = LILA.#normalizeValue(value)
+                    );
+        }
+
+        throw SyntaxError(`Invalid write destination (${destination.value})`);
     }
 
     add(destination, value) {
@@ -174,7 +199,13 @@ export class LILA {
                 const pointer = allocationPointer;
 
                 for (const value of chunks.match(/\d+(\.\d+)?/g) ?? [])
-                    this.move(allocationPointer++, Number(value));
+                    this.move(
+                        {
+                            type: 'address',
+                            value: allocationPointer++,
+                        },
+                        Number(value)
+                    );
 
                 return pointer;
             });
@@ -196,7 +227,7 @@ export class LILA {
     static #TokenTypes = {
         whitespace: /^[^\S\n]+/,
         newline: /^\n\s*/,
-        address: /^\[[^\S\n]*\d+(\.\d+)?[^\S\n]*\]/,
+        address: /^\[[^\S\n]*(\d+(\.\d+)?|[_A-Za-z][_A-Za-z\d]*)[^\S\n]*\]/,
         number: /^\d+(\.\d+)?/,
         comma: /^,/,
         jumplabel: /^[_A-Za-z][_A-Za-z\d]*:/,
@@ -226,7 +257,7 @@ export class LILA {
                     if (tokenType === 'address')
                         match = match.slice(1, -1).trim();
 
-                    if (['number', 'address'].includes(tokenType))
+                    if (tokenType === 'number' || (tokenType === 'address' && isFinite(match)))
                         match = Number(match);
 
                     result.push({
@@ -312,20 +343,12 @@ export class LILA {
 
                         readToken(['newline']);
 
-                        if (source.type === 'number')
-                            this.#code.push(() => {
-                                this.move(
-                                    destination.value,
-                                    source.value,
-                                );
-                            });
-                        else
-                            this.#code.push(() => {
-                                this.move(
-                                    destination.value,
-                                    this.retrieve(source.value),
-                                );
-                            });
+                        this.#code.push(() => {
+                            this.move(
+                                destination,
+                                this.retrieve(source),
+                            );
+                        });
 
                         continue;
                     case 'INC':
@@ -334,7 +357,7 @@ export class LILA {
                         readToken(['newline']);
 
                         this.#code.push(() => {
-                            this.increment(destination.value);
+                            this.increment(destination);
                         });
 
                         continue;
@@ -344,7 +367,7 @@ export class LILA {
                         readToken(['newline']);
 
                         this.#code.push(() => {
-                            this.decrement(destination.value);
+                            this.decrement(destination);
                         });
 
                         continue;
@@ -357,20 +380,12 @@ export class LILA {
 
                         readToken(['newline']);
 
-                        if (source.type === 'number')
-                            this.#code.push(() => {
-                                this.add(
-                                    destination.value,
-                                    source.value,
-                                );
-                            });
-                        else
-                            this.#code.push(() => {
-                                this.add(
-                                    destination.value,
-                                    this.retrieve(source.value),
-                                );
-                            });
+                        this.#code.push(() => {
+                            this.add(
+                                destination,
+                                this.retrieve(source),
+                            );
+                        });
 
                         continue;
                     case 'SUB':
@@ -382,20 +397,12 @@ export class LILA {
 
                         readToken(['newline']);
 
-                        if (source.type === 'number')
-                            this.#code.push(() => {
-                                this.subtract(
-                                    destination.value,
-                                    source.value,
-                                );
-                            });
-                        else
-                            this.#code.push(() => {
-                                this.subtract(
-                                    destination.value,
-                                    this.retrieve(source.value),
-                                );
-                            });
+                        this.#code.push(() => {
+                            this.subtract(
+                                destination,
+                                this.retrieve(source),
+                            );
+                        });
 
                         continue;
                     case 'MUL':
@@ -407,20 +414,12 @@ export class LILA {
 
                         readToken(['newline']);
 
-                        if (source.type === 'number')
-                            this.#code.push(() => {
-                                this.multiply(
-                                    destination.value,
-                                    source.value,
-                                );
-                            });
-                        else
-                            this.#code.push(() => {
-                                this.multiply(
-                                    destination.value,
-                                    this.retrieve(source.value),
-                                );
-                            });
+                        this.#code.push(() => {
+                            this.multiply(
+                                destination,
+                                this.retrieve(source),
+                            );
+                        });
 
                         continue;
                     case 'CMP':
@@ -432,34 +431,12 @@ export class LILA {
 
                         readToken(['newline']);
 
-                        if (value1.type === 'number' && value2.type === 'number')
-                            this.#code.push(() => {
-                                this.compare(
-                                    value1.value,
-                                    value2.value,
-                                );
-                            });
-                        else if (value1.type === 'number' && value2.type !== 'number')
-                            this.#code.push(() => {
-                                this.compare(
-                                    value1.value,
-                                    this.retrieve(value2.value),
-                                );
-                            });
-                        else if (value1.type !== 'number' && value2.type === 'number')
-                            this.#code.push(() => {
-                                this.compare(
-                                    this.retrieve(value1.value),
-                                    value2.value,
-                                );
-                            });
-                        else
-                            this.#code.push(() => {
-                                this.compare(
-                                    this.retrieve(value1.value),
-                                    this.retrieve(value2.value),
-                                );
-                            });
+                        this.#code.push(() => {
+                            this.compare(
+                                this.retrieve(value1),
+                                this.retrieve(value2),
+                            );
+                        });
 
                         continue;
                     case 'PUSH':
@@ -467,18 +444,11 @@ export class LILA {
 
                         readToken(['newline']);
 
-                        if (value1.type === 'number')
-                            this.#code.push(() => {
-                                this.push(
-                                    value1.value
-                                );
-                            });
-                        else
-                            this.#code.push(() => {
-                                this.push(
-                                    this.retrieve(value1.value)
-                                );
-                            });
+                        this.#code.push(() => {
+                            this.push(
+                                this.retrieve(value1)
+                            );
+                        });
 
                         continue;
                     case 'POP':
@@ -487,7 +457,7 @@ export class LILA {
                         readToken(['newline']);
 
                         this.#code.push(() => {
-                            this.pop(destination.value);
+                            this.pop(destination);
                         });
 
                         continue;
@@ -525,7 +495,10 @@ export class LILA {
                         this.#code.push(() => {
                             this.codePointer = Math.max(
                                 0,
-                                this.retrieve(++this.registers.sreg),
+                                this.retrieve({
+                                    type: 'address',
+                                    value: ++this.registers.sreg,
+                                }),
                             );
                         });
 
