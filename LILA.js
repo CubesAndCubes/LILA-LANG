@@ -270,9 +270,11 @@ export class LILA {
         const jumpAdresses = {};
 
         for (let i = 0; tokens.length > i;) {
-            if (tokens[i].type === 'jumplabel') {
-                if (tokens[i + 1].type === 'newline') {
-                    jumpAdresses[tokens[i].value] = this.#code.length;
+            const peekToken = (offset = 0) => tokens[i + offset];
+
+            if (peekToken().type === 'jumplabel') {
+                if (peekToken(1).type === 'newline') {
+                    jumpAdresses[peekToken().value] = this.#code.length;
 
                     i += 2;
 
@@ -280,23 +282,23 @@ export class LILA {
                 }
             }
 
-            if (tokens[i].type === 'identifier') {
-                switch(tokens[i].value.toUpperCase()) {
+            if (peekToken().type === 'identifier') {
+                switch (peekToken().value.toUpperCase()) {
                     case 'MOV':
-                        const destination = tokens[i + 1];
+                        const destination = peekToken(1);
 
                         if (!['identifier', 'address'].includes(destination.type))
                             break;
 
-                        if (tokens[i + 2].type !== 'comma')
+                        if (peekToken(2).type !== 'comma')
                             break;
                         
-                        const source = tokens[i + 3];
+                        const source = peekToken(3);
 
                         if (!['identifier', 'address', 'number'].includes(source.type))
                             break;
 
-                        if (tokens[i + 4].type !== 'newline')
+                        if (peekToken(4).type !== 'newline')
                             break;
 
                         if (source.type === 'number')
