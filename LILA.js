@@ -294,13 +294,16 @@ export class LILA {
             }
 
             if (peekToken().type === 'identifier') {
+                let destination;
+                let source;
+
                 switch (readToken(['identifier']).value.toUpperCase()) {
                     case 'MOV':
-                        const destination = readToken(['identifier', 'address']);
+                        destination = readToken(['identifier', 'address']);
 
                         readToken(['comma']);
                         
-                        const source = readToken(['identifier', 'address', 'number']);
+                        source = readToken(['identifier', 'address', 'number']);
 
                         readToken(['newline']);
 
