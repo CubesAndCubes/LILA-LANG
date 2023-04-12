@@ -504,6 +504,32 @@ export class LILA {
                         });
 
                         continue;
+                    case 'CALL':
+                        label = readToken(['identifier']);
+
+                        readToken(['newline']);
+
+                        this.#code.push(() => {
+                            if (!(label.value in jumpAdresses))
+                                throw SyntaxError(`Undefined subroutine label (${label.value}).`);
+
+                            this.push(this.codePointer);
+
+                            this.codePointer = jumpAdresses[label.value];
+                        });
+
+                        continue;
+                    case 'RET':
+                        readToken(['newline']);
+
+                        this.#code.push(() => {
+                            this.codePointer = Math.max(
+                                0,
+                                this.retrieve(++this.registers.sreg),
+                            );
+                        });
+
+                        continue;
                 }
             }
 
