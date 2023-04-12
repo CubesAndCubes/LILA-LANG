@@ -57,8 +57,8 @@ export class LILA {
     retrieve(source) {
         switch(source.type) {
             case 'address':
-                if (source.value in this.registers)
-                    source.value = this.registers[source.value] ?? 0;
+                if (source.value.toLowerCase?.() in this.registers)
+                    source.value = this.registers[source.value.toLowerCase()] ?? 0;
 
                 return this.memory[parseInt(source.value)] ?? 0;
 
@@ -66,8 +66,8 @@ export class LILA {
                 return source.value;
 
             case 'identifier':
-                if (source.value in this.registers)
-                    return this.registers[source.value] ?? 0;
+                if (source.value.toLowerCase?.() in this.registers)
+                    return this.registers[source.value.toLowerCase()] ?? 0;
         }
         
         throw SyntaxError(`Invalid retrieval source (${source.value})`);
@@ -76,17 +76,17 @@ export class LILA {
     move(destination, value) {
         switch (destination.type) {
             case 'address':
-                if (destination.value in this.registers)
-                    destination.value = this.registers[destination.value] ?? 0;
+                if (destination.value.toLowerCase?.() in this.registers)
+                    destination.value = this.registers[destination.value.toLowerCase()] ?? 0;
 
                 return void (
                     this.memory[parseInt(destination.value)] = LILA.#normalizeValue(value)
                 );
 
             case 'identifier':
-                if (destination.value in this.registers)
+                if (destination.value.toLowerCase?.() in this.registers)
                     return void (
-                        this.registers[destination.value] = LILA.#normalizeValue(value)
+                        this.registers[destination.value.toLowerCase()] = LILA.#normalizeValue(value)
                     );
         }
 
