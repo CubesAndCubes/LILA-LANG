@@ -1,2 +1,2 @@
 # LILA
-Low-Level Instruciton Language
+Low-Level Instruction Language
