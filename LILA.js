@@ -245,12 +245,14 @@ export class LILA {
         return result;
     }
 
+    codeEntry = 0;
+
     codePointer = 0;
 
     #code = [];
 
     exec() {
-        this.codePointer = 0;
+        this.codePointer = this.codeEntry;
 
         while(this.#code.length > this.codePointer)
             this.#code[this.codePointer++]();
@@ -320,5 +322,7 @@ export class LILA {
 
             throw SyntaxError('Unexpected series of tokens.');
         }
+
+        this.codeEntry = jumpAdresses['_start'] ?? 0;
     }
 }
