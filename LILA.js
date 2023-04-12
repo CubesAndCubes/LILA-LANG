@@ -44,13 +44,17 @@ export class LILA {
         );
     }
 
+    #popHelper() {
+        return this.retrieve({
+            type: 'address',
+            value: this.registers.sreg++,
+        });
+    }
+
     pop(destination) {
         this.move(
             destination,
-            this.retrieve({
-                type: 'address',
-                value: this.registers.sreg++,
-            }),
+            this.#popHelper(),
         );
     }
 
@@ -495,10 +499,7 @@ export class LILA {
                         this.#code.push(() => {
                             this.codePointer = Math.max(
                                 0,
-                                this.retrieve({
-                                    type: 'address',
-                                    value: this.registers.sreg++,
-                                }),
+                                this.#popHelper(),
                             );
                         });
 
