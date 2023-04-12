@@ -1,13 +1,6 @@
 /* LILA | Low-Level Instruction Language | Copyright (c) 2023 CubesAndCubes */
 
 export class LILA {
-    static #normalizeValue(value) {
-        if (typeof value === 'number')
-            return value;
-
-        return 0;
-    }
-
     flags = {
         zf: false, // Zero Flag
         sf: false, // Sign Flag
@@ -40,7 +33,7 @@ export class LILA {
                 type: 'address',
                 value: --this.registers.sreg,
             },
-            LILA.#normalizeValue(value),
+            value,
         );
     }
 
@@ -84,13 +77,13 @@ export class LILA {
                     destination.value = this.registers[destination.value.toLowerCase()] ?? 0;
 
                 return void (
-                    this.memory[parseInt(destination.value)] = LILA.#normalizeValue(value)
+                    this.memory[parseInt(destination.value)] = value
                 );
 
             case 'identifier':
                 if (destination.value.toLowerCase?.() in this.registers)
                     return void (
-                        this.registers[destination.value.toLowerCase()] = LILA.#normalizeValue(value)
+                        this.registers[destination.value.toLowerCase()] = value
                     );
         }
 
@@ -101,7 +94,7 @@ export class LILA {
         this.move(
             destination,
             this.#adjustFlags(
-                this.retrieve(destination) + LILA.#normalizeValue(value)
+                this.retrieve(destination) + value
             ),
         );
     }
@@ -119,7 +112,7 @@ export class LILA {
         this.move(
             destination,
             this.#adjustFlags(
-                this.retrieve(destination) - LILA.#normalizeValue(value)
+                this.retrieve(destination) - value
             ),
         );
     }
@@ -135,7 +128,7 @@ export class LILA {
 
     compare(value, value2) {
         this.#adjustFlags(
-            LILA.#normalizeValue(value) - LILA.#normalizeValue(value2)
+            value - value2
         );
     }
 
@@ -143,7 +136,7 @@ export class LILA {
         this.move(
             destination,
             this.#adjustFlags(
-                this.retrieve(destination) * LILA.#normalizeValue(value)
+                this.retrieve(destination) * value
             ),
         );
     }
@@ -152,7 +145,7 @@ export class LILA {
         this.move(
             destination,
             this.#adjustFlags(
-                this.retrieve(destination) / LILA.#normalizeValue(value)
+                this.retrieve(destination) / value
             ),
         );
     }
