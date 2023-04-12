@@ -323,6 +323,16 @@ export class LILA {
                             });
 
                         continue;
+                    case 'INC':
+                        destination = readToken(['identifier', 'address']);
+
+                        readToken(['newline']);
+
+                        this.#code.push(() => {
+                            this.increment(destination.value);
+                        });
+
+                        continue;
                 }
             }
 
