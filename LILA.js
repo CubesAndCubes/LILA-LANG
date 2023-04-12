@@ -543,6 +543,7 @@ export class LILA {
 
                         continue;
                     case 'JS': // jump if sign
+                    case 'JL': // jump if less
                         label = readToken(['identifier']);
 
                         readToken(['newline']);
@@ -557,6 +558,7 @@ export class LILA {
 
                         continue;
                     case 'JNS': // jump if not sign
+                    case 'JGE': // jump if greater or equal
                         label = readToken(['identifier']);
 
                         readToken(['newline']);
@@ -566,6 +568,34 @@ export class LILA {
                                 throw SyntaxError(`Undefined jump label (${label.value}).`);
 
                             if (!this.flags.sf)
+                                this.codePointer = jumpAdresses[label.value];
+                        });
+
+                        continue;
+                    case 'JG': // jump if greater
+                        label = readToken(['identifier']);
+
+                        readToken(['newline']);
+
+                        this.#code.push(() => {
+                            if (!(label.value in jumpAdresses))
+                                throw SyntaxError(`Undefined jump label (${label.value}).`);
+
+                            if (!this.flags.sf && !this.flags.zf)
+                                this.codePointer = jumpAdresses[label.value];
+                        });
+
+                        continue;
+                    case 'JLE': // jump if less or equal
+                        label = readToken(['identifier']);
+
+                        readToken(['newline']);
+
+                        this.#code.push(() => {
+                            if (!(label.value in jumpAdresses))
+                                throw SyntaxError(`Undefined jump label (${label.value}).`);
+
+                            if (this.flags.sf || this.flags.zf)
                                 this.codePointer = jumpAdresses[label.value];
                         });
 
