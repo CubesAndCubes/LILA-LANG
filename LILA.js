@@ -339,6 +339,7 @@ export class LILA {
 
                 switch (readToken(['identifier']).value.toUpperCase()) {
                     case 'MOV':
+                    case 'MOVE':
                         destination = readToken(['identifier', 'address']);
 
                         readToken(['comma']);
@@ -356,6 +357,7 @@ export class LILA {
 
                         continue;
                     case 'INC':
+                    case 'INCREMENT':
                         destination = readToken(['identifier', 'address']);
 
                         readToken(['newline']);
@@ -366,6 +368,7 @@ export class LILA {
 
                         continue;
                     case 'DEC':
+                    case 'DECREMENT':
                         destination = readToken(['identifier', 'address']);
 
                         readToken(['newline']);
@@ -393,6 +396,7 @@ export class LILA {
 
                         continue;
                     case 'SUB':
+                    case 'SUBTRACT':
                         destination = readToken(['identifier', 'address']);
 
                         readToken(['comma']);
@@ -410,6 +414,7 @@ export class LILA {
 
                         continue;
                     case 'MUL':
+                    case 'MULTIPLY':
                         destination = readToken(['identifier', 'address']);
 
                         readToken(['comma']);
@@ -427,6 +432,7 @@ export class LILA {
 
                         continue;
                     case 'CMP':
+                    case 'COMPARE':
                         value1 = readToken(['identifier', 'address', 'number']);
 
                         readToken(['comma']);
@@ -466,6 +472,7 @@ export class LILA {
 
                         continue;
                     case 'JMP':
+                    case 'JUMP':
                         label = readToken(['identifier']);
 
                         readToken(['newline']);
@@ -494,6 +501,7 @@ export class LILA {
 
                         continue;
                     case 'RET':
+                    case 'RETURN':
                         readToken(['newline']);
 
                         this.#code.push(() => {
