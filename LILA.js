@@ -459,6 +459,25 @@ export class LILA {
                             });
 
                         continue;
+                    case 'PUSH':
+                        value1 = readToken(['identifier', 'address', 'number']);
+
+                        readToken(['newline']);
+
+                        if (value1.type === 'number')
+                            this.#code.push(() => {
+                                this.push(
+                                    value1.value
+                                );
+                            });
+                        else
+                            this.#code.push(() => {
+                                this.push(
+                                    this.retrieve(value1.value)
+                                );
+                            });
+
+                        continue;
                 }
             }
 
