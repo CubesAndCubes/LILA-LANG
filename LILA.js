@@ -27,21 +27,24 @@ export class LILA {
         sreg: 0, // Stack (Pointer) Register
     };
 
+    #addressFrom(value) {
+        return {
+            type: 'address',
+            value: value,
+        };
+    }
+
     push(value) {
         this.move(
-            {
-                type: 'address',
-                value: --this.registers.sreg,
-            },
+            this.#addressFrom(--this.registers.sreg),
             value,
         );
     }
 
     #popHelper() {
-        return this.retrieve({
-            type: 'address',
-            value: this.registers.sreg++,
-        });
+        return this.retrieve(
+            this.#addressFrom(this.registers.sreg++)
+        );
     }
 
     pop(destination) {
@@ -197,10 +200,7 @@ export class LILA {
 
                 for (const value of chunks.match(/\d+(\.\d+)?/g) ?? [])
                     this.move(
-                        {
-                            type: 'address',
-                            value: allocationPointer++,
-                        },
+                        this.#addressFrom(allocationPointer++),
                         Number(value)
                     );
 
