@@ -300,6 +300,7 @@ export class LILA {
                 let source;
                 let value1;
                 let value2;
+                let label;
 
                 switch (readToken(['identifier']).value.toUpperCase()) {
                     case 'MOV':
@@ -487,6 +488,19 @@ export class LILA {
 
                         this.#code.push(() => {
                             this.pop(destination.value);
+                        });
+
+                        continue;
+                    case 'JMP':
+                        label = readToken(['identifier']);
+
+                        readToken(['newline']);
+
+                        this.#code.push(() => {
+                            if (!(label.value in jumpAdresses))
+                                throw SyntaxError(`Undefined jump label (${label.value}).`);
+
+                            this.codePointer = jumpAdresses[label.value];
                         });
 
                         continue;
