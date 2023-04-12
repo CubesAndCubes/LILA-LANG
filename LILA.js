@@ -478,6 +478,16 @@ export class LILA {
                             });
 
                         continue;
+                    case 'POP':
+                        destination = readToken(['identifier', 'address']);
+
+                        readToken(['newline']);
+
+                        this.#code.push(() => {
+                            this.pop(destination.value);
+                        });
+
+                        continue;
                 }
             }
 
