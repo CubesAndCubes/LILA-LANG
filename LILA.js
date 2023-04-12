@@ -270,7 +270,7 @@ export class LILA {
         for (let i = 0; tokens.length > i;) {
             if (tokens[i].type === 'jumplabel') {
                 if (tokens[i + 1].type === 'newline') {
-                    jumpAdresses[tokens[i].value] = this.#code.length - 1;
+                    jumpAdresses[tokens[i].value] = this.#code.length;
 
                     i += 2;
 
