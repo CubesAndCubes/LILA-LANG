@@ -195,7 +195,7 @@ export class LILA {
             // evaluate arithmetic expressions
 
             script[i] = script[i].replace(
-                /([()]+[^\S\n]*)?(-[^\S\n]*)?\d+(\.\d+)?([^\S\n]*[()]+)?([^\S\n]*[+\-*/%][^\S\n]*([()]+[^\S\n]*)?(-[^\S\n]*)?\d+(\.\d+)?([^\S\n]*[()]+)?)+/g,
+                /([()]+[^\S\n]*)?(-[^\S\n]*)?\d+(\.\d+)?([^\S\n]*[()]+)?([^\S\n]*[+\-*\/%][^\S\n]*([()]+[^\S\n]*)?(-[^\S\n]*)?\d+(\.\d+)?([^\S\n]*[()]+)?)+/g,
                 expression => eval(expression),
             );
 
