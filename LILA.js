@@ -59,10 +59,9 @@ export class LILA {
     retrieve(source) {
         switch(source.type) {
             case 'address':
-                if (source.value.toLowerCase?.() in this.registers)
-                    source.value = this.registers[source.value.toLowerCase()] ?? 0;
-
-                return this.memory[parseInt(source.value)] ?? 0;
+                return this.memory[
+                    parseInt(this.#evaluateExpression(source.value))
+                ] ?? 0;
 
             case 'number':
                 return source.value;
@@ -78,11 +77,10 @@ export class LILA {
     move(destination, value) {
         switch (destination.type) {
             case 'address':
-                if (destination.value.toLowerCase?.() in this.registers)
-                    destination.value = this.registers[destination.value.toLowerCase()] ?? 0;
-
                 return void (
-                    this.memory[parseInt(destination.value)] = value
+                    this.memory[
+                        parseInt(this.#evaluateExpression(destination.value))
+                    ] = value
                 );
 
             case 'identifier':
@@ -237,7 +235,7 @@ export class LILA {
     static #TokenTypes = {
         whitespace: /^[^\S\n]+/,
         newline: /^\n\s*/,
-        address: /^\[[^\S\n]*(\d+(\.\d+)?|[_A-Za-z][_A-Za-z\d]*)[^\S\n]*\]/,
+        address: /^\[[^\S\n]*(\d+(\.\d+)?|[_A-Za-z][_A-Za-z\d]*|([()]+[^\S\n]*)?((-[^\S\n]*)?\d+(\.\d+)?|[_A-Za-z][_A-Za-z\d]*)([^\S\n]*[()]+)?([^\S\n]*[+\-*/%][^\S\n]*([()]+[^\S\n]*)?((-[^\S\n]*)?\d+(\.\d+)?|[_A-Za-z][_A-Za-z\d]*)([^\S\n]*[()]+)?)+)[^\S\n]*\]/,
         number: /^(-[^\S\n]*)?\d+(\.\d+)?/,
         comma: /^,/,
         jumplabel: /^[_A-Za-z][_A-Za-z\d]*:/,
@@ -304,6 +302,25 @@ export class LILA {
             this.#code[this.codePointer++]();
 
         return this.registers.areg;
+    }
+
+    #evaluateExpression(expression) {
+        if (typeof expression === 'number')
+            return expression;
+
+        expression = expression.toLowerCase();
+
+        for (const [register, value] of Object.entries(this.registers)) {
+            expression = expression.replaceAll(register, value ?? 0);
+
+            if (isFinite(expression))
+                return Number(expression);
+        }
+
+        if (!expression.match(/[^\d+\-*\/%()\s.]/))
+            return Number(eval(expression));
+
+        throw SyntaxError(`Arithmetic expression contains illegal identifier (${expression}).`);
     }
 
     constructor(script) {
