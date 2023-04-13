@@ -164,7 +164,10 @@ export class LILA {
 
         // string expressions to numbers arrays
 
-        script = script.replace(/("[^"]+")|('[^']+')/g, match => match.slice(1, -1).split('').map(char => char.charCodeAt(0)).join(','));
+        script = script.replace(
+            /("[^"]+")|('[^']+')/g,
+            match => match.slice(1, -1).split('').map(char => char.charCodeAt(0)).join(',')
+        );
 
         // make slim and separate lines
 
@@ -177,15 +180,24 @@ export class LILA {
         for (let i = 0; script.length > i; i++) {
             // evaluate dollar signs ($)
 
-            script[i] = script[i].replace(/\$/g, allocationPointer);
+            script[i] = script[i].replace(
+                /\$/g,
+                allocationPointer,
+            );
 
             // evaluate labels
 
-            script[i] = script[i].replace(/[_A-Za-z][_A-Za-z\d]*(?!.*:)/g, identifier => labels[identifier] ?? identifier);
+            script[i] = script[i].replace(
+                /[_A-Za-z][_A-Za-z\d]*(?!.*:)/g,
+                identifier => labels[identifier] ?? identifier,
+            );
 
             // evaluate arithmetic expressions
 
-            script[i] = script[i].replace(/([()]+[^\S\n]*)?(-[^\S\n]*)?\d+(\.\d+)?([^\S\n]*[()]+)?([^\S\n]*[+\-*/%][^\S\n]*([()]+[^\S\n]*)?(-[^\S\n]*)?\d+(\.\d+)?([^\S\n]*[()]+)?)+/g, expression => eval(expression));
+            script[i] = script[i].replace(
+                /([()]+[^\S\n]*)?(-[^\S\n]*)?\d+(\.\d+)?([^\S\n]*[()]+)?([^\S\n]*[+\-*/%][^\S\n]*([()]+[^\S\n]*)?(-[^\S\n]*)?\d+(\.\d+)?([^\S\n]*[()]+)?)+/g,
+                expression => eval(expression),
+            );
 
             // REServe Chunks (pesudo instruction)
 
