@@ -475,6 +475,24 @@ export class LILA {
                         });
 
                         continue;
+                    case 'DIV':
+                    case 'DIVIDE':
+                        destination = readToken(['identifier', 'address']);
+
+                        readToken(['comma']);
+
+                        source = readToken(['identifier', 'address', 'number']);
+
+                        readToken(['newline']);
+
+                        this.#code.push(() => {
+                            this.divide(
+                                destination,
+                                this.retrieve(source),
+                            );
+                        });
+
+                        continue;
                     case 'CMP':
                     case 'COMPARE':
                         value1 = readToken(['identifier', 'address', 'number']);
