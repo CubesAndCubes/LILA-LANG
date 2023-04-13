@@ -320,7 +320,7 @@ export class LILA {
         if (!expression.match(/[^\d+\-*\/%()\s.]/))
             return Number(eval(expression));
 
-        throw SyntaxError(`Arithmetic expression contains illegal identifier (${expression}).`);
+        throw SyntaxError(`Arithmetic expression (${expression}) accesses illegal identifier(s).`);
     }
 
     constructor(script) {
