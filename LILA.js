@@ -27,6 +27,7 @@ export class LILA {
         creg: 0, // Counter Register
         dreg: 0, // Data Register
         sreg: 0, // Stack (Pointer) Register
+        freg: 0, // (Stack) Frame (Pointer) Register
     };
 
     #addressFrom(value) {
