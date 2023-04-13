@@ -193,8 +193,8 @@ export class LILA {
             // evaluate arithmetic expressions
 
             script[i] = script[i].replace(
-                /([()]+[^\S\n]*)?(-[^\S\n]*)?\d+(\.\d+)?([^\S\n]*[()]+)?([^\S\n]*[+\-*\/%][^\S\n]*([()]+[^\S\n]*)?(-[^\S\n]*)?\d+(\.\d+)?([^\S\n]*[()]+)?)+/g,
-                expression => eval(expression),
+                /([()]+[^\S\n]*)?((-[^\S\n]*)?\d+(\.\d+)?|[_A-Za-z][_A-Za-z\d]*)([^\S\n]*[()]+)?([^\S\n]*[+\-*\/%][^\S\n]*([()]+[^\S\n]*)?((-[^\S\n]*)?\d+(\.\d+)?|[_A-Za-z][_A-Za-z\d]*)([^\S\n]*[()]+)?)+/g,
+                expression => !expression.match(/[^\d+\-*\/%()\s.]/) ? eval(expression) : expression,
             );
 
             // REServe Chunks (pesudo instruction)
