@@ -17,6 +17,8 @@ export class LILA {
         return value;
     }
 
+    #entryMemory = {};
+
     memory = {};
 
     registers = {
@@ -153,7 +155,9 @@ export class LILA {
         );
     }
 
-    #preprocess(script) {
+    static #preprocess(script) {
+        const entryMemory = {};
+
         // remove comments
 
         script = script.replace(/;.*/g, '');
@@ -199,10 +203,7 @@ export class LILA {
                 const pointer = allocationPointer;
 
                 for (const value of chunks.match(/\d+(\.\d+)?/g) ?? [])
-                    this.move(
-                        this.#addressFrom(allocationPointer++),
-                        Number(value)
-                    );
+                    entryMemory[allocationPointer++] = Number(value);
 
                 return pointer;
             });
@@ -218,7 +219,7 @@ export class LILA {
             });
         }
 
-        return script.join('\n').trim() + '\n';
+        return [script.join('\n').trim() + '\n', entryMemory];
     }
 
     static #TokenTypes = {
@@ -280,6 +281,11 @@ export class LILA {
     #code = [];
 
     exec() {
+        this.memory = Object.assign({}, this.#entryMemory);
+
+        for (const register of Object.keys(this.registers))
+            this.registers[register] = 0;
+
         this.codePointer = this.#codeEntry;
 
         while(this.#code.length > this.codePointer)
@@ -289,8 +295,12 @@ export class LILA {
     }
 
     constructor(script) {
+        const [processedScript, entryMemory] = LILA.#preprocess(script);
+
+        this.#entryMemory = entryMemory;
+
         const tokens = LILA.#tokenize(
-            this.#preprocess(script)
+            processedScript
         );
 
         const jumpAdresses = {
