@@ -310,12 +310,11 @@ export class LILA {
 
         expression = expression.toLowerCase();
 
-        for (const [register, value] of Object.entries(this.registers)) {
-            expression = expression.replaceAll(register, value ?? 0);
+        if (expression in this.registers)
+            return this.registers[expression] ?? 0;
 
-            if (isFinite(expression))
-                return Number(expression);
-        }
+        for (const [register, value] of Object.entries(this.registers))
+            expression = expression.replaceAll(register, value ?? 0);
 
         if (!expression.match(/[^\d+\-*\/%()\s.]/))
             return Number(eval(expression));
