@@ -163,6 +163,15 @@ export class LILA {
         );
     }
 
+    bitwiseOr(destination, value) {
+        this.move(
+            destination,
+            this.#adjustFlags(
+                this.retrieve(destination) | value
+            ),
+        );
+    }
+
     static #preprocess(script) {
         const entryMemory = {};
 
@@ -513,6 +522,23 @@ export class LILA {
 
                         this.#code.push(() => {
                             this.bitwiseAnd(
+                                destination,
+                                this.retrieve(source),
+                            );
+                        });
+
+                        continue;
+                    case 'OR':
+                        destination = readToken(['identifier', 'address']);
+
+                        readToken(['comma']);
+
+                        source = readToken(['identifier', 'address', 'number']);
+
+                        readToken(['newline']);
+
+                        this.#code.push(() => {
+                            this.bitwiseOr(
                                 destination,
                                 this.retrieve(source),
                             );
