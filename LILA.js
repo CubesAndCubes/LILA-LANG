@@ -761,19 +761,23 @@ export class LILA {
                         continue;
                     case 'JS': // jump if sign
                     case 'JL': // jump if less
+                    case 'JNGE': // jump if not greater or equal
                         readJump(() => this.flags.sf);
 
                         continue;
                     case 'JNS': // jump if not sign
                     case 'JGE': // jump if greater or equal
+                    case 'JNL': // jump if not lesser
                         readJump(() => !this.flags.sf);
 
                         continue;
                     case 'JG': // jump if greater
+                    case 'JNLE': // jump if not less or equal
                         readJump(() => !this.flags.sf && !this.flags.zf);
 
                         continue;
                     case 'JLE': // jump if less or equal
+                    case 'JNG': // jump if not greater
                         readJump(() => this.flags.sf || this.flags.zf);
 
                         continue;
