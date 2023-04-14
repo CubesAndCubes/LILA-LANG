@@ -181,6 +181,15 @@ export class LILA {
         );
     }
 
+    bitwiseNot(destination) {
+        this.move(
+            destination,
+            this.#adjustFlags(
+                ~ this.retrieve(destination)
+            ),
+        );
+    }
+
     static #preprocess(script) {
         const entryMemory = {};
 
@@ -568,6 +577,16 @@ export class LILA {
                                 destination,
                                 this.retrieve(source),
                             );
+                        });
+
+                        continue;
+                    case 'NOT':
+                        destination = readToken(['identifier', 'address']);
+
+                        readToken(['newline']);
+
+                        this.#code.push(() => {
+                            this.bitwiseNot(destination);
                         });
 
                         continue;
