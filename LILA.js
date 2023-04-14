@@ -172,6 +172,15 @@ export class LILA {
         );
     }
 
+    bitwiseExclusiveOr(destination, value) {
+        this.move(
+            destination,
+            this.#adjustFlags(
+                this.retrieve(destination) ^ value
+            ),
+        );
+    }
+
     static #preprocess(script) {
         const entryMemory = {};
 
@@ -539,6 +548,23 @@ export class LILA {
 
                         this.#code.push(() => {
                             this.bitwiseOr(
+                                destination,
+                                this.retrieve(source),
+                            );
+                        });
+
+                        continue;
+                    case 'XOR':
+                        destination = readToken(['identifier', 'address']);
+
+                        readToken(['comma']);
+
+                        source = readToken(['identifier', 'address', 'number']);
+
+                        readToken(['newline']);
+
+                        this.#code.push(() => {
+                            this.bitwiseExclusiveOr(
                                 destination,
                                 this.retrieve(source),
                             );
