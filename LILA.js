@@ -199,6 +199,15 @@ export class LILA {
         );
     }
 
+    bitwiseRightShift(destination, value) {
+        this.move(
+            destination,
+            this.#adjustFlags(
+                this.retrieve(destination) >> value
+            ),
+        );
+    }
+
     static #preprocess(script) {
         const entryMemory = {};
 
@@ -611,6 +620,23 @@ export class LILA {
 
                         this.#code.push(() => {
                             this.bitwiseLeftShift(
+                                destination,
+                                this.retrieve(source),
+                            );
+                        });
+
+                        continue;
+                    case 'SAR':
+                        destination = readToken(['identifier', 'address']);
+
+                        readToken(['comma']);
+
+                        source = readToken(['identifier', 'address', 'number']);
+
+                        readToken(['newline']);
+
+                        this.#code.push(() => {
+                            this.bitwiseRightShift(
                                 destination,
                                 this.retrieve(source),
                             );
