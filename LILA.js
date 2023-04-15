@@ -342,7 +342,7 @@ export class LILA {
             }
 
             if (!tokenFound)
-                throw SyntaxError(`Undefined Token "${script}"`);
+                throw SyntaxError(`Unknown token (${script}).`);
         }
 
         return result;
@@ -383,7 +383,7 @@ export class LILA {
         if (!expression.match(/[^\d+\-*\/%()\s.]/))
             return Number(eval(expression));
 
-        throw SyntaxError(`Arithmetic expression (${expression}) accesses illegal identifier(s).`);
+        throw SyntaxError(`Arithmetic expression (${expression}) contains illegal identifier(s).`);
     }
 
     constructor(script) {
@@ -406,7 +406,7 @@ export class LILA {
                 const nextToken = peekToken();
 
                 if (!types.includes(nextToken.type))
-                    throw SyntaxError(`Unexpected token; Expected (${types.join(' or ')}), got (${nextToken.type})`);
+                    throw SyntaxError(`Got unexpected token (${nextToken.type}) with value "${nextToken.value}", expected (${types.join(' or ')}).`);
 
                 i++;
 
@@ -420,7 +420,7 @@ export class LILA {
 
                 this.#code.push(() => {
                     if (!(label.value in jumpAdresses))
-                        throw SyntaxError(`Undefined jump label (${label.value}).`);
+                        throw ReferenceError(`Attempted jump to undefined or invalid label "${label.value}".`);
 
                     if (condition())
                         this.codePointer = jumpAdresses[label.value];
@@ -716,7 +716,7 @@ export class LILA {
 
                         this.#code.push(() => {
                             if (!(label.value in jumpAdresses))
-                                throw SyntaxError(`Undefined subroutine label (${label.value}).`);
+                                throw SyntaxError(`Attempted call to undefined subroutine "${label.value}".`);
 
                             this.push(this.codePointer);
 
@@ -792,7 +792,7 @@ export class LILA {
                 }
             }
 
-            throw SyntaxError('Unexpected series of tokens.');
+            throw SyntaxError(`Invalid sequence of tokens (${tokens.slice(i - 1).map(token => token.type).join(', ')}).`);
         }
 
         this.#codeEntry = jumpAdresses['_start'];
