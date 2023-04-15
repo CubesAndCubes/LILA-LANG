@@ -11,7 +11,7 @@ codeinput.oninput = () => {
             codeinput.value
         )).exec();
     }
-    catch {
-        codeoutput.innerText = 'ERROR';
+    catch(e) {
+        codeoutput.innerText = e;
     }
 }
