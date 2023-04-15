@@ -406,7 +406,7 @@ export class LILA {
                 const nextToken = peekToken();
 
                 if (!types.includes(nextToken.type))
-                    throw SyntaxError(`Unexpected token; Expected (${types}), got (${nextToken.type})`);
+                    throw SyntaxError(`Unexpected token; Expected (${types.join(' or ')}), got (${nextToken.type})`);
 
                 i++;
 
