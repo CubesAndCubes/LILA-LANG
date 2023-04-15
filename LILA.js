@@ -729,10 +729,10 @@ export class LILA {
                         readToken(['newline']);
 
                         this.#code.push(() => {
-                            this.codePointer = Math.max(
-                                0,
-                                this.#popHelper(),
-                            );
+                            this.codePointer = this.#popHelper();
+
+                            if (this.codePointer < 0 || this.codePointer >= this.#code.length)
+                                throw SyntaxError('Jumped out-of-bounds due to invalid return address on top of stack.');
                         });
 
                         continue;
