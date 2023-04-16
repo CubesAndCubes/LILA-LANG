@@ -298,7 +298,7 @@ export class LILA {
 
     static #TokenTypes = {
         whitespace: /^[^\S\n]+/,
-        newline: /^\n\s*/,
+        endline: /^\n\s*/,
         address: /^\[[^\S\n]*((-[^\S\n]*)?\d+(\.\d+)?|[_A-Za-z][_A-Za-z\d]*|([()]+[^\S\n]*)?((-[^\S\n]*)?\d+(\.\d+)?|[_A-Za-z][_A-Za-z\d]*)([^\S\n]*[()]+)?([^\S\n]*[+\-*\/%][*]?[^\S\n]*([()]+[^\S\n]*)?((-[^\S\n]*)?\d+(\.\d+)?|[_A-Za-z][_A-Za-z\d]*)([^\S\n]*[()]+)?)+)[^\S\n]*\]/,
         number: /^(-[^\S\n]*)?\d+(\.\d+)?/,
         comma: /^,/,
@@ -416,7 +416,7 @@ export class LILA {
             const readJump = condition => {
                 const label = readToken(['identifier']);
 
-                readToken(['newline']);
+                readToken(['endline']);
 
                 this.#code.push(() => {
                     if (!(label.value in jumpAdresses))
@@ -430,7 +430,7 @@ export class LILA {
             if (peekToken().type === 'jumplabel') {
                 const labelToken = readToken(['jumplabel']);
 
-                if (readToken(['newline'])) {
+                if (readToken(['endline'])) {
                     jumpAdresses[labelToken.value] = this.#code.length;
 
                     continue;
@@ -453,7 +453,7 @@ export class LILA {
                         
                         source = readToken(['identifier', 'address', 'number']);
 
-                        readToken(['newline']);
+                        readToken(['endline']);
 
                         this.#code.push(() => {
                             this.move(
@@ -467,7 +467,7 @@ export class LILA {
                     case 'INCREMENT':
                         destination = readToken(['identifier', 'address']);
 
-                        readToken(['newline']);
+                        readToken(['endline']);
 
                         this.#code.push(() => {
                             this.increment(destination);
@@ -478,7 +478,7 @@ export class LILA {
                     case 'DECREMENT':
                         destination = readToken(['identifier', 'address']);
 
-                        readToken(['newline']);
+                        readToken(['endline']);
 
                         this.#code.push(() => {
                             this.decrement(destination);
@@ -492,7 +492,7 @@ export class LILA {
 
                         source = readToken(['identifier', 'address', 'number']);
 
-                        readToken(['newline']);
+                        readToken(['endline']);
 
                         this.#code.push(() => {
                             this.add(
@@ -510,7 +510,7 @@ export class LILA {
 
                         source = readToken(['identifier', 'address', 'number']);
 
-                        readToken(['newline']);
+                        readToken(['endline']);
 
                         this.#code.push(() => {
                             this.subtract(
@@ -528,7 +528,7 @@ export class LILA {
 
                         source = readToken(['identifier', 'address', 'number']);
 
-                        readToken(['newline']);
+                        readToken(['endline']);
 
                         this.#code.push(() => {
                             this.multiply(
@@ -546,7 +546,7 @@ export class LILA {
 
                         source = readToken(['identifier', 'address', 'number']);
 
-                        readToken(['newline']);
+                        readToken(['endline']);
 
                         this.#code.push(() => {
                             this.divide(
@@ -563,7 +563,7 @@ export class LILA {
 
                         source = readToken(['identifier', 'address', 'number']);
 
-                        readToken(['newline']);
+                        readToken(['endline']);
 
                         this.#code.push(() => {
                             this.bitwiseAnd(
@@ -580,7 +580,7 @@ export class LILA {
 
                         source = readToken(['identifier', 'address', 'number']);
 
-                        readToken(['newline']);
+                        readToken(['endline']);
 
                         this.#code.push(() => {
                             this.bitwiseOr(
@@ -597,7 +597,7 @@ export class LILA {
 
                         source = readToken(['identifier', 'address', 'number']);
 
-                        readToken(['newline']);
+                        readToken(['endline']);
 
                         this.#code.push(() => {
                             this.bitwiseExclusiveOr(
@@ -610,7 +610,7 @@ export class LILA {
                     case 'NOT':
                         destination = readToken(['identifier', 'address']);
 
-                        readToken(['newline']);
+                        readToken(['endline']);
 
                         this.#code.push(() => {
                             this.bitwiseNot(destination);
@@ -625,7 +625,7 @@ export class LILA {
 
                         source = readToken(['identifier', 'address', 'number']);
 
-                        readToken(['newline']);
+                        readToken(['endline']);
 
                         this.#code.push(() => {
                             this.bitwiseLeftShift(
@@ -642,7 +642,7 @@ export class LILA {
 
                         source = readToken(['identifier', 'address', 'number']);
 
-                        readToken(['newline']);
+                        readToken(['endline']);
 
                         this.#code.push(() => {
                             this.bitwiseRightShift(
@@ -659,7 +659,7 @@ export class LILA {
 
                         source = readToken(['identifier', 'address', 'number']);
 
-                        readToken(['newline']);
+                        readToken(['endline']);
 
                         this.#code.push(() => {
                             this.bitwiseUnsignedRightShift(
@@ -677,7 +677,7 @@ export class LILA {
 
                         value2 = readToken(['identifier', 'address', 'number']);
 
-                        readToken(['newline']);
+                        readToken(['endline']);
 
                         this.#code.push(() => {
                             this.compare(
@@ -690,7 +690,7 @@ export class LILA {
                     case 'PUSH':
                         value1 = readToken(['identifier', 'address', 'number']);
 
-                        readToken(['newline']);
+                        readToken(['endline']);
 
                         this.#code.push(() => {
                             this.push(
@@ -702,7 +702,7 @@ export class LILA {
                     case 'POP':
                         destination = readToken(['identifier', 'address']);
 
-                        readToken(['newline']);
+                        readToken(['endline']);
 
                         this.#code.push(() => {
                             this.pop(destination);
@@ -712,7 +712,7 @@ export class LILA {
                     case 'CALL':
                         label = readToken(['identifier']);
 
-                        readToken(['newline']);
+                        readToken(['endline']);
 
                         this.#code.push(() => {
                             if (!(label.value in jumpAdresses))
@@ -726,7 +726,7 @@ export class LILA {
                         continue;
                     case 'RET':
                     case 'RETURN':
-                        readToken(['newline']);
+                        readToken(['endline']);
 
                         this.#code.push(() => {
                             this.codePointer = this.#popHelper();
@@ -737,7 +737,7 @@ export class LILA {
 
                         continue;
                     case 'EXIT':
-                        readToken(['newline']);
+                        readToken(['endline']);
 
                         this.#code.push(() => {
                             this.codePointer = this.#code.length;
