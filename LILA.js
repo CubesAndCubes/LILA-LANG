@@ -723,6 +723,7 @@ export class LILA {
                         });
 
                         continue;
+                    case 'PSH':
                     case 'PUSH':
                         value1 = readToken(['identifier', 'address', 'number']);
 
