@@ -259,7 +259,7 @@ export class LILA {
             // evaluate dollar signs ($)
 
             script[i] = script[i].replace(
-                /\$/g,
+                /(?<=[+\-*\/%\s]|^)\$(?=[+\-*\/%\s]|$)/g,
                 allocationPointer,
             );
 
