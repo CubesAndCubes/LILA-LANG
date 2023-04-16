@@ -5,6 +5,7 @@ export class LILA {
         zf: false, // Zero Flag
         sf: false, // Sign Flag
         if: false, // Integrity/Integer Flag
+        ff: false, // Finite Flag
     };
 
     #adjustFlags(value) {
@@ -13,6 +14,8 @@ export class LILA {
         this.flags.sf = 0 > value;
 
         this.flags.if = Number.isInteger(value);
+
+        this.flags.ff = isFinite(value);
 
         return value;
     }
@@ -787,6 +790,14 @@ export class LILA {
                         continue;
                     case 'JNI': // jump if not integral
                         readJump(() => !this.flags.if);
+
+                        continue;
+                    case 'JF': // jump if finite
+                        readJump(() => this.flags.ff);
+
+                        continue;
+                    case 'JNF': // jump if not finite
+                        readJump(() => !this.flags.ff);
 
                         continue;
                 }
