@@ -450,6 +450,12 @@ export class LILA {
                 });
             };
 
+            if (peekToken().type === 'endline') {
+                readToken(['endline']);
+
+                continue;
+            }
+
             if (peekToken().type === 'jumplabel') {
                 const labelToken = readToken(['jumplabel']);
 
