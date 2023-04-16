@@ -249,7 +249,7 @@ export class LILA {
 
         // make slim and separate lines
 
-        script = script.match(/\S(.*\S)?/g);
+        script = script.match(/\S(.*\S)?/g) ?? [];
 
         let allocationPointer = 0;
 
@@ -309,7 +309,10 @@ export class LILA {
             });
         }
 
-        return [script.join('\n').trim() + '\n', entryMemory];
+        if (script.length)
+            script = script.join('\n').trim() + '\n';
+
+        return [script, entryMemory];
     }
 
     static #TokenTypes = {
