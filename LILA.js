@@ -2,10 +2,10 @@
 
 export class LILA {
     flags = {
-        zf: false, // Zero Flag
+        zf: true, // Zero Flag
         sf: false, // Sign Flag
-        if: false, // Integrity/Integer Flag
-        ff: false, // Finite Flag
+        if: true, // Integrity/Integer Flag
+        ff: true, // Finite Flag
     };
 
     #adjustFlags(value) {
