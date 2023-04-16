@@ -97,6 +97,19 @@ export class LILA {
         throw SyntaxError(`Invalid write destination (${destination.value})`);
     }
 
+    loadEffectiveAddress(destination, source) {
+        if (source.type === 'address') {
+            this.move(
+                destination,
+                parseInt(this.#evaluateExpression(source.value)),
+            )
+
+            return;
+        }
+
+        throw SyntaxError(`Cannot get effective address of non-address (${source.value})`);
+    }
+
     add(destination, value) {
         this.move(
             destination,
@@ -462,6 +475,23 @@ export class LILA {
                             this.move(
                                 destination,
                                 this.retrieve(source),
+                            );
+                        });
+
+                        continue;
+                    case 'LEA':
+                        destination = readToken(['identifier', 'address']);
+
+                        readToken(['comma']);
+
+                        source = readToken(['address']);
+
+                        readToken(['endline']);
+
+                        this.#code.push(() => {
+                            this.loadEffectiveAddress(
+                                destination,
+                                source,
                             );
                         });
 
