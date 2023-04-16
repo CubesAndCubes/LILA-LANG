@@ -429,7 +429,7 @@ export class LILA {
                 const nextToken = peekToken();
 
                 if (!types.includes(nextToken.type))
-                    throw SyntaxError(`Got unexpected token (${nextToken.type})${(nextToken.type !== 'endline') ? ` with value "${nextToken.value}"` : ''}, expected (${types.join(' or ')}).`);
+                    throw SyntaxError(`Got unexpected token (${nextToken.type})${(nextToken.type !== 'endline') ? ` with value "${nextToken.value}"` : ''}, expected ${types.join(' or ')}.`);
 
                 i++;
 
