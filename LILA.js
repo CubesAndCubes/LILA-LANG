@@ -384,7 +384,11 @@ export class LILA {
         while(this.#code.length > this.codePointer)
             this.#code[this.codePointer++]();
 
-        return this.registers.areg;
+        return {
+            flags: Object.assign({}, this.flags),
+            registers: Object.assign({}, this.registers),
+            memory: Object.assign({}, this.memory),
+        };
     }
 
     #evaluateExpression(expression) {
