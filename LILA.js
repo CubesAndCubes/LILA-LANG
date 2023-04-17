@@ -240,6 +240,10 @@ export class LILA {
 
         script = script.replace(/;.*/g, '');
 
+        // trim lines
+
+        script = script.replace(/^[^\S\n]+|[^\S\n]+$/g, '');
+
         // string expressions to numbers arrays
 
         script = script.replace(
