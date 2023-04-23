@@ -75,7 +75,7 @@ export class LILA {
                     return this.registers[source.value.toLowerCase()] ?? 0;
         }
         
-        throw SyntaxError(`Invalid retrieval source (${source.value})`);
+        throw SyntaxError(`line ${this.#debugLine}; Invalid retrieval source (${source.value})`);
     }
 
     move(destination, value) {
@@ -94,7 +94,7 @@ export class LILA {
                     );
         }
 
-        throw SyntaxError(`Invalid write destination (${destination.value})`);
+        throw SyntaxError(`line ${this.#debugLine}; Invalid write destination (${destination.value})`);
     }
 
     loadEffectiveAddress(destination, source) {
@@ -107,7 +107,7 @@ export class LILA {
             return;
         }
 
-        throw SyntaxError(`Cannot get effective address of non-address (${source.value})`);
+        throw SyntaxError(`line ${this.#debugLine}; Cannot get effective address of non-address (${source.value})`);
     }
 
     add(destination, value) {
@@ -251,15 +251,21 @@ export class LILA {
             match => match.slice(1, -1).split('').map(char => char.charCodeAt(0)).join(',')
         );
 
-        // make slim and separate lines
+        // separate lines
 
-        script = script.match(/\S(.*\S)?/g) ?? [];
+        script = script.match(/^.*/gm) ?? [];
 
         let allocationPointer = 0;
 
         const labels = {};
 
         for (let i = 0; script.length > i; i++) {
+            if (script[i].trim() === '') {
+                script[i] = '';
+
+                continue;
+            }
+
             // evaluate dollar signs ($)
 
             script[i] = script[i].replace(
@@ -314,14 +320,14 @@ export class LILA {
         }
 
         if (script.length)
-            script = script.join('\n').trim() + '\n';
+            script = script.join('\n') + '\n';
 
         return [script, entryMemory];
     }
 
     static #TokenTypes = {
         whitespace: /^[^\S\n]+/,
-        endline: /^\n\s*/,
+        endline: /^\n/,
         address: /^\[[^\S\n]*((-[^\S\n]*)?\d+(\.\d+)?|[_A-Za-z][_A-Za-z\d]*|([()]+[^\S\n]*)?((-[^\S\n]*)?\d+(\.\d+)?|[_A-Za-z][_A-Za-z\d]*)([^\S\n]*[()]+)?([^\S\n]*[+\-*\/%][*]?[^\S\n]*([()]+[^\S\n]*)?((-[^\S\n]*)?\d+(\.\d+)?|[_A-Za-z][_A-Za-z\d]*)([^\S\n]*[()]+)?)+)[^\S\n]*\]/,
         number: /^(-[^\S\n]*)?\d+(\.\d+)?/,
         comma: /^,/,
@@ -331,6 +337,8 @@ export class LILA {
 
     static #tokenize(script) {
         const result = [];
+
+        let lineNumber = 1;
 
         while (script.length) {
             let tokenFound = false;
@@ -355,6 +363,9 @@ export class LILA {
                     if (tokenType === 'number' || (tokenType === 'address' && isFinite(match)))
                         match = Number(match);
 
+                    if (tokenType === 'endline')
+                        lineNumber++;
+
                     result.push({
                         type: tokenType,
                         value: match,
@@ -365,7 +376,7 @@ export class LILA {
             }
 
             if (!tokenFound)
-                throw SyntaxError(`Unknown token (${script}).`);
+                throw SyntaxError(`line ${lineNumber}; Unknown token (${script}).`);
         }
 
         return result;
@@ -375,7 +386,20 @@ export class LILA {
 
     codePointer = 0;
 
+    #oldCodePointer = 0;
+
     #code = [];
+
+    #codeDebugLineReferences = [];
+
+    get #debugLine() {        
+        return this.#codeDebugLineReferences[this.#oldCodePointer];
+    }
+
+    #pushCode(code, sourceCodeLineNumber) {
+        this.#code.push(code);
+        this.#codeDebugLineReferences.push(sourceCodeLineNumber);
+    }
 
     exec() {
         this.memory = Object.assign({}, this.#entryMemory);
@@ -385,8 +409,9 @@ export class LILA {
 
         this.codePointer = this.#codeEntry;
 
-        while(this.#code.length > this.codePointer)
-            this.#code[this.codePointer++]();
+        while(this.#code.length > this.codePointer) {
+            this.#code[this.#oldCodePointer = this.codePointer++]();
+        }
 
         return {
             flags: Object.assign({}, this.flags),
@@ -410,7 +435,7 @@ export class LILA {
         if (!expression.match(/[^\d+\-*\/%()\s.]/))
             return Number(eval(expression));
 
-        throw SyntaxError(`Arithmetic expression (${expression}) contains illegal identifier(s).`);
+        throw SyntaxError(`line ${this.#debugLine}; Arithmetic expression (${expression}) contains illegal identifier(s).`);
     }
 
     constructor(script) {
@@ -426,6 +451,8 @@ export class LILA {
             '_start': this.#codeEntry
         };
 
+        let lineNumber = 1;
+
         for (let i = 0; tokens.length > i;) {
             const peekToken = (offset = 0) => tokens[i + offset];
 
@@ -433,7 +460,10 @@ export class LILA {
                 const nextToken = peekToken();
 
                 if (!types.includes(nextToken.type))
-                    throw SyntaxError(`Got unexpected token (${nextToken.type})${(nextToken.type !== 'endline') ? ` with value "${nextToken.value}"` : ''}, expected ${types.join(' or ')}.`);
+                    throw SyntaxError(`line ${lineNumber}; Got unexpected token (${nextToken.type})${(nextToken.type !== 'endline') ? ` with value "${nextToken.value}"` : ''}, expected ${types.join(' or ')}.`);
+
+                if (nextToken.type === 'endline')
+                    lineNumber++;
 
                 i++;
 
@@ -445,13 +475,15 @@ export class LILA {
 
                 readToken(['endline']);
 
-                this.#code.push(() => {
-                    if (!(label.value in jumpAdresses))
-                        throw ReferenceError(`Attempted jump to undefined or invalid label "${label.value}".`);
+                this.#pushCode(
+                    () => {
+                        if (!(label.value in jumpAdresses))
+                            throw ReferenceError(`line ${this.#debugLine}; Attempted jump to undefined or invalid label "${label.value}".`);
 
-                    if (condition())
-                        this.codePointer = jumpAdresses[label.value];
-                });
+                        if (condition())
+                            this.codePointer = jumpAdresses[label.value];
+                    }, lineNumber - 1,
+                );
             };
 
             if (peekToken().type === 'endline') {
@@ -488,12 +520,14 @@ export class LILA {
 
                         readToken(['endline']);
 
-                        this.#code.push(() => {
-                            this.move(
-                                destination,
-                                this.retrieve(source),
-                            );
-                        });
+                        this.#pushCode(
+                            () => {
+                                this.move(
+                                    destination,
+                                    this.retrieve(source),
+                                );
+                            }, lineNumber - 1,
+                        );
 
                         continue;
                     case 'LEA':
@@ -505,12 +539,14 @@ export class LILA {
 
                         readToken(['endline']);
 
-                        this.#code.push(() => {
-                            this.loadEffectiveAddress(
-                                destination,
-                                source,
-                            );
-                        });
+                        this.#pushCode(
+                            () => {
+                                this.loadEffectiveAddress(
+                                    destination,
+                                    source,
+                                );
+                            }, lineNumber - 1,
+                        );
 
                         continue;
                     case 'INC':
@@ -519,9 +555,11 @@ export class LILA {
 
                         readToken(['endline']);
 
-                        this.#code.push(() => {
-                            this.increment(destination);
-                        });
+                        this.#pushCode(
+                            () => {
+                                this.increment(destination);
+                            }, lineNumber - 1,
+                        );
 
                         continue;
                     case 'DEC':
@@ -530,9 +568,11 @@ export class LILA {
 
                         readToken(['endline']);
 
-                        this.#code.push(() => {
-                            this.decrement(destination);
-                        });
+                        this.#pushCode(
+                            () => {
+                                this.decrement(destination);
+                            }, lineNumber - 1,
+                        );
 
                         continue;
                     case 'ADD':
@@ -544,12 +584,14 @@ export class LILA {
 
                         readToken(['endline']);
 
-                        this.#code.push(() => {
-                            this.add(
-                                destination,
-                                this.retrieve(source),
-                            );
-                        });
+                        this.#pushCode(
+                            () => {
+                                this.add(
+                                    destination,
+                                    this.retrieve(source),
+                                );
+                            }, lineNumber - 1,
+                        );
 
                         continue;
                     case 'SUB':
@@ -562,12 +604,14 @@ export class LILA {
 
                         readToken(['endline']);
 
-                        this.#code.push(() => {
-                            this.subtract(
-                                destination,
-                                this.retrieve(source),
-                            );
-                        });
+                        this.#pushCode(
+                            () => {
+                                this.subtract(
+                                    destination,
+                                    this.retrieve(source),
+                                );
+                            }, lineNumber - 1,
+                        );
 
                         continue;
                     case 'MUL':
@@ -580,12 +624,14 @@ export class LILA {
 
                         readToken(['endline']);
 
-                        this.#code.push(() => {
-                            this.multiply(
-                                destination,
-                                this.retrieve(source),
-                            );
-                        });
+                        this.#pushCode(
+                            () => {
+                                this.multiply(
+                                    destination,
+                                    this.retrieve(source),
+                                );
+                            }, lineNumber - 1,
+                        );
 
                         continue;
                     case 'DIV':
@@ -598,12 +644,14 @@ export class LILA {
 
                         readToken(['endline']);
 
-                        this.#code.push(() => {
-                            this.divide(
-                                destination,
-                                this.retrieve(source),
-                            );
-                        });
+                        this.#pushCode(
+                            () => {
+                                this.divide(
+                                    destination,
+                                    this.retrieve(source),
+                                );
+                            }, lineNumber - 1,
+                        );
 
                         continue;
                     case 'AND':
@@ -615,12 +663,14 @@ export class LILA {
 
                         readToken(['endline']);
 
-                        this.#code.push(() => {
-                            this.bitwiseAnd(
-                                destination,
-                                this.retrieve(source),
-                            );
-                        });
+                        this.#pushCode(
+                            () => {
+                                this.bitwiseAnd(
+                                    destination,
+                                    this.retrieve(source),
+                                );
+                            }, lineNumber - 1,
+                        );
 
                         continue;
                     case 'OR':
@@ -632,12 +682,14 @@ export class LILA {
 
                         readToken(['endline']);
 
-                        this.#code.push(() => {
-                            this.bitwiseOr(
-                                destination,
-                                this.retrieve(source),
-                            );
-                        });
+                        this.#pushCode(
+                            () => {
+                                this.bitwiseOr(
+                                    destination,
+                                    this.retrieve(source),
+                                );
+                            }, lineNumber - 1,
+                        );
 
                         continue;
                     case 'XOR':
@@ -649,12 +701,14 @@ export class LILA {
 
                         readToken(['endline']);
 
-                        this.#code.push(() => {
-                            this.bitwiseExclusiveOr(
-                                destination,
-                                this.retrieve(source),
-                            );
-                        });
+                        this.#pushCode(
+                            () => {
+                                this.bitwiseExclusiveOr(
+                                    destination,
+                                    this.retrieve(source),
+                                );
+                            }, lineNumber - 1,
+                        );
 
                         continue;
                     case 'NOT':
@@ -662,9 +716,11 @@ export class LILA {
 
                         readToken(['endline']);
 
-                        this.#code.push(() => {
-                            this.bitwiseNot(destination);
-                        });
+                        this.#pushCode(
+                            () => {
+                                this.bitwiseNot(destination);
+                            }, lineNumber - 1,
+                        );
 
                         continue;
                     case 'SAL':
@@ -677,12 +733,14 @@ export class LILA {
 
                         readToken(['endline']);
 
-                        this.#code.push(() => {
-                            this.bitwiseLeftShift(
-                                destination,
-                                this.retrieve(source),
-                            );
-                        });
+                        this.#pushCode(
+                            () => {
+                                this.bitwiseLeftShift(
+                                    destination,
+                                    this.retrieve(source),
+                                );
+                            }, lineNumber - 1,
+                        );
 
                         continue;
                     case 'SAR':
@@ -694,12 +752,14 @@ export class LILA {
 
                         readToken(['endline']);
 
-                        this.#code.push(() => {
-                            this.bitwiseRightShift(
-                                destination,
-                                this.retrieve(source),
-                            );
-                        });
+                        this.#pushCode(
+                            () => {
+                                this.bitwiseRightShift(
+                                    destination,
+                                    this.retrieve(source),
+                                );
+                            }, lineNumber - 1,
+                        );
 
                         continue;
                     case 'SHR':
@@ -711,12 +771,14 @@ export class LILA {
 
                         readToken(['endline']);
 
-                        this.#code.push(() => {
-                            this.bitwiseUnsignedRightShift(
-                                destination,
-                                this.retrieve(source),
-                            );
-                        });
+                        this.#pushCode(
+                            () => {
+                                this.bitwiseUnsignedRightShift(
+                                    destination,
+                                    this.retrieve(source),
+                                );
+                            }, lineNumber - 1,
+                        );
 
                         continue;
                     case 'CMP':
@@ -729,12 +791,14 @@ export class LILA {
 
                         readToken(['endline']);
 
-                        this.#code.push(() => {
-                            this.compare(
-                                this.retrieve(value1),
-                                this.retrieve(value2),
-                            );
-                        });
+                        this.#pushCode(
+                            () => {
+                                this.compare(
+                                    this.retrieve(value1),
+                                    this.retrieve(value2),
+                                );
+                            }, lineNumber - 1,
+                        );
 
                         continue;
                     case 'PSH':
@@ -743,11 +807,13 @@ export class LILA {
 
                         readToken(['endline']);
 
-                        this.#code.push(() => {
-                            this.push(
-                                this.retrieve(value1)
-                            );
-                        });
+                        this.#pushCode(
+                            () => {
+                                this.push(
+                                    this.retrieve(value1)
+                                );
+                            }, lineNumber - 1,
+                        );
 
                         continue;
                     case 'POP':
@@ -755,9 +821,11 @@ export class LILA {
 
                         readToken(['endline']);
 
-                        this.#code.push(() => {
-                            this.pop(destination);
-                        });
+                        this.#pushCode(
+                            () => {
+                                this.pop(destination);
+                            }, lineNumber - 1,
+                        );
 
                         continue;
                     case 'CALL':
@@ -765,34 +833,40 @@ export class LILA {
 
                         readToken(['endline']);
 
-                        this.#code.push(() => {
-                            if (!(label.value in jumpAdresses))
-                                throw SyntaxError(`Attempted call to undefined subroutine "${label.value}".`);
+                        this.#pushCode(
+                            () => {
+                                if (!(label.value in jumpAdresses))
+                                    throw SyntaxError(`line ${this.#debugLine}; Attempted call to undefined subroutine "${label.value}".`);
 
-                            this.push(this.codePointer);
+                                this.push(this.#oldCodePointer + 1);
 
-                            this.codePointer = jumpAdresses[label.value];
-                        });
+                                this.codePointer = jumpAdresses[label.value];
+                            }, lineNumber - 1,
+                        );
 
                         continue;
                     case 'RET':
                     case 'RETURN':
                         readToken(['endline']);
 
-                        this.#code.push(() => {
-                            this.codePointer = this.#popHelper();
+                        this.#pushCode(
+                            () => {
+                                this.codePointer = this.#popHelper();
 
-                            if (this.codePointer < 0 || this.codePointer >= this.#code.length)
-                                throw SyntaxError('Jumped out-of-bounds due to invalid return address on top of stack.');
-                        });
+                                if (this.codePointer < 0 || this.codePointer >= this.#code.length)
+                                    throw SyntaxError(`line ${this.#debugLine}; Jumped out-of-bounds due to invalid return address on top of stack.`);
+                            }, lineNumber - 1,
+                        );
 
                         continue;
                     case 'EXIT':
                         readToken(['endline']);
 
-                        this.#code.push(() => {
-                            this.codePointer = this.#code.length;
-                        });
+                        this.#pushCode(
+                            () => {
+                                this.codePointer = this.#code.length;
+                            }, lineNumber - 1,
+                        );
 
                         continue;
                     case 'JMP':
@@ -851,7 +925,7 @@ export class LILA {
                 }
             }
 
-            throw SyntaxError(`Invalid sequence of tokens (${tokens.slice(i - 1).map(token => token.type).join(', ')}).`);
+            throw SyntaxError(`line ${lineNumber}; Invalid sequence of tokens (${tokens.slice(i - 1).map(token => token.type).join(', ')}).`);
         }
 
         this.#codeEntry = jumpAdresses['_start'];
