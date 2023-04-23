@@ -5,41 +5,56 @@ window.myProgram = new LILA(await (await fetch('./example.lila')).text());
 const codeinput = document.getElementById('codeinput');
 const codeoutput = document.getElementById('codeoutput');
 
-codeinput.oninput = () => {
-    try {
-        const output = (new LILA(
-            codeinput.value
-        )).exec();
+const generateStateInfo = state => `<b><u>REGISTERS</u></b>
 
-        codeoutput.innerHTML = `
-<b><u>REGISTERS</u></b>
-
-<b>areg</b>: ${output.registers.areg}
-<b>breg</b>: ${output.registers.breg}
-<b>creg</b>: ${output.registers.creg}
-<b>dreg</b>: ${output.registers.dreg}
-<b>sreg</b>: ${output.registers.sreg}
-<b>freg</b>: ${output.registers.freg}
+<b>areg</b>: ${state.registers.areg}
+<b>breg</b>: ${state.registers.breg}
+<b>creg</b>: ${state.registers.creg}
+<b>dreg</b>: ${state.registers.dreg}
+<b>sreg</b>: ${state.registers.sreg}
+<b>freg</b>: ${state.registers.freg}
 
 <b><u>FLAGS</u></b>
 
-<b>zf</b>: ${output.flags.zf}
-<b>sf</b>: ${output.flags.sf}
-<b>if</b>: ${output.flags.if}
-<b>ff</b>: ${output.flags.ff}
+<b>zf</b>: ${state.flags.zf}
+<b>sf</b>: ${state.flags.sf}
+<b>if</b>: ${state.flags.if}
+<b>ff</b>: ${state.flags.ff}
 
 <b><u>MEMORY</u></b>
 
 ${Object.keys(
-    output.memory
+    state.memory
 ).sort(
     (x, y) => x - y
 ).map(
-    address => `${(address > -1) ? ' ' : ''}<b>${address}</b>: ${output.memory[address]}`
-).join('\n')}
-`;
+    address => `${(address > -1) ? ' ' : ''}<b>${address}</b>: ${state.memory[address]}`
+).join('\n')}`;
+
+codeinput.oninput = () => {
+    let program;
+
+    try {
+        program = new LILA(codeinput.value);
+    }
+    catch (e) {
+        codeoutput.innerHTML = `<span class="error">${e}</span>`;
+
+        return;
+    }
+
+    try {
+        const output = program.exec();
+
+        codeoutput.innerHTML = generateStateInfo(output);
     }
     catch(e) {
-        codeoutput.innerText = e;
+        codeoutput.innerHTML = `<span class="error">${e}</span>
+
+${generateStateInfo({
+    registers: Object.assign({}, program.registers),
+    flags: Object.assign({}, program.flags),
+    memory: Object.assign({}, program.memory),            
+})}`;
     }
 }
