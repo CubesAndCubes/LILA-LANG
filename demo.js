@@ -31,6 +31,20 @@ ${Object.keys(
     address => `${(address > -1) ? ' ' : ''}<b>${address}</b>: ${state.memory[address]}`
 ).join('\n')}`;
 
+codeinput.addEventListener('keydown', e => {
+    if (e.key !== 'Tab')
+        return;
+    
+    e.preventDefault();
+
+    const start = codeinput.selectionStart;
+    const end = codeinput.selectionEnd;
+
+    codeinput.value = codeinput.value.substring(0, start) + '\t' + codeinput.value.substring(end);
+
+    codeinput.selectionStart = codeinput.selectionEnd = start + 1;
+});
+
 codeinput.oninput = () => {
     let program;
 
