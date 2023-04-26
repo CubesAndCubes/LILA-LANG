@@ -75,7 +75,7 @@ export class LILA {
                     return this.registers[source.value.toLowerCase()] ?? 0;
         }
         
-        throw SyntaxError(`line ${this.#debugLine}; Invalid retrieval source (${source.value})`);
+        throw ReferenceError(`line ${this.#debugLine}; Invalid retrieval source (${source.value})`);
     }
 
     move(destination, value) {
@@ -94,7 +94,7 @@ export class LILA {
                     );
         }
 
-        throw SyntaxError(`line ${this.#debugLine}; Invalid write destination (${destination.value})`);
+        throw ReferenceError(`line ${this.#debugLine}; Invalid write destination (${destination.value})`);
     }
 
     loadEffectiveAddress(destination, source) {
@@ -107,7 +107,7 @@ export class LILA {
             return;
         }
 
-        throw SyntaxError(`line ${this.#debugLine}; Cannot get effective address of non-address (${source.value})`);
+        throw ReferenceError(`line ${this.#debugLine}; Cannot get effective address of non-address (${source.value})`);
     }
 
     add(destination, value) {
@@ -435,7 +435,7 @@ export class LILA {
         if (!expression.match(/[^\d+\-*\/%()\s.]/))
             return Number(eval(expression));
 
-        throw SyntaxError(`line ${this.#debugLine}; Arithmetic expression (${expression}) contains illegal identifier(s).`);
+        throw ReferenceError(`line ${this.#debugLine}; Arithmetic expression (${expression}) contains illegal identifier(s).`);
     }
 
     constructor(script) {
@@ -836,7 +836,7 @@ export class LILA {
                         this.#pushCode(
                             () => {
                                 if (!(label.value in jumpAdresses))
-                                    throw SyntaxError(`line ${this.#debugLine}; Attempted call to undefined subroutine "${label.value}".`);
+                                    throw ReferenceError(`line ${this.#debugLine}; Attempted call to undefined subroutine "${label.value}".`);
 
                                 this.push(this.#oldCodePointer + 1);
 
@@ -854,7 +854,7 @@ export class LILA {
                                 this.codePointer = this.#popHelper();
 
                                 if (this.codePointer < 0 || this.codePointer >= this.#code.length)
-                                    throw SyntaxError(`line ${this.#debugLine}; Jumped out-of-bounds due to invalid return address on top of stack.`);
+                                    throw RangeError(`line ${this.#debugLine}; Jumped out-of-bounds due to invalid return address on top of stack.`);
                             }, lineNumber - 1,
                         );
 
