@@ -311,6 +311,9 @@ export class LILA {
             // Store in label
 
             script[lineNumber] = script[lineNumber].replace(/^[^\S\n]*([_A-Za-z][_A-Za-z\d]*):\s*(\d+(\.\d+)?)\s*$/gm, (match, identifier, content) => {
+                if (identifier[0] === '_')
+                    throw SyntaxError(`line ${lineNumber + 1}; Label definition "${identifier}" starts with an underscore.`);
+
                 content = content.trim();
 
                 labels[identifier] = content;
