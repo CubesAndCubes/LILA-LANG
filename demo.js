@@ -52,7 +52,7 @@ codeinput.oninput = () => {
         program = new LILA(codeinput.value);
     }
     catch (e) {
-        codeoutput.innerHTML = `<span class="error">${e}</span>`;
+        codeoutput.innerHTML = `<div class="error">${e}</div>`;
 
         return;
     }
@@ -63,7 +63,7 @@ codeinput.oninput = () => {
         codeoutput.innerHTML = generateStateInfo(output);
     }
     catch(e) {
-        codeoutput.innerHTML = `<span class="error">${e}</span>
+        codeoutput.innerHTML = `<div class="error">${e}</div>
 
 ${generateStateInfo({
     registers: Object.assign({}, program.registers),
