@@ -259,37 +259,37 @@ export class LILA {
 
         const labels = {};
 
-        for (let i = 0; script.length > i; i++) {
-            if (script[i].trim() === '') {
-                script[i] = '';
+        for (let lineNumber = 0; script.length > lineNumber; lineNumber++) {
+            if (script[lineNumber].trim() === '') {
+                script[lineNumber] = '';
 
                 continue;
             }
 
             // evaluate dollar signs ($)
 
-            script[i] = script[i].replace(
+            script[lineNumber] = script[lineNumber].replace(
                 /(?<=[+\-*\/%\s]|^)\$(?=[+\-*\/%\s]|$)/g,
                 allocationPointer,
             );
 
             // evaluate labels
 
-            script[i] = script[i].replace(
+            script[lineNumber] = script[lineNumber].replace(
                 /[_A-Za-z][_A-Za-z\d]*(?!.*:)/g,
                 identifier => labels[identifier] ?? identifier,
             );
 
             // evaluate arithmetic expressions
 
-            script[i] = script[i].replace(
+            script[lineNumber] = script[lineNumber].replace(
                 /([()]+[^\S\n]*)?((-[^\S\n]*)?\d+(\.\d+)?|[_A-Za-z][_A-Za-z\d]*)([^\S\n]*[()]+)?([^\S\n]*[+\-*\/%][*]?[^\S\n]*([()]+[^\S\n]*)?((-[^\S\n]*)?\d+(\.\d+)?|[_A-Za-z][_A-Za-z\d]*)([^\S\n]*[()]+)?)+/g,
                 expression => !expression.match(/[^\d+\-*\/%()\s.]/) ? eval(expression) : expression,
             );
 
             // REServe Chunks (pesudo instruction)
 
-            script[i] = script[i].replace(/RESC[^\S\n]+(\d+(\.\d+)?)/gi, (match, chunks) => {
+            script[lineNumber] = script[lineNumber].replace(/RESC[^\S\n]+(\d+(\.\d+)?)/gi, (match, chunks) => {
                 const pointer = allocationPointer;
 
                 allocationPointer += Number(parseInt(chunks));
@@ -299,7 +299,7 @@ export class LILA {
 
             // DEFine Chunks (pseudo instruction)
 
-            script[i] = script[i].replace(/DEFC[^\S\n]+(\d+(\.\d+)?([^\S\n]*,[^\S\n]*\d+(\.\d+)?)*)/gi, (match, chunks) => {
+            script[lineNumber] = script[lineNumber].replace(/DEFC[^\S\n]+(\d+(\.\d+)?([^\S\n]*,[^\S\n]*\d+(\.\d+)?)*)/gi, (match, chunks) => {
                 const pointer = allocationPointer;
 
                 for (const value of chunks.match(/\d+(\.\d+)?/g) ?? [])
@@ -310,7 +310,7 @@ export class LILA {
 
             // Store in label
 
-            script[i] = script[i].replace(/^[^\S\n]*([_A-Za-z][_A-Za-z\d]*):\s*(\d+(\.\d+)?)\s*$/gm, (match, identifier, content) => {
+            script[lineNumber] = script[lineNumber].replace(/^[^\S\n]*([_A-Za-z][_A-Za-z\d]*):\s*(\d+(\.\d+)?)\s*$/gm, (match, identifier, content) => {
                 content = content.trim();
 
                 labels[identifier] = content;
