@@ -861,7 +861,7 @@ export class LILA {
                             () => {
                                 this.codePointer = this.#popHelper();
 
-                                if (this.codePointer < 0 || this.codePointer >= this.#code.length)
+                                if (this.codePointer < 0 || this.codePointer > this.#code.length)
                                     throw RangeError(`line ${this.#debugLine}; Jumped out-of-bounds due to invalid return address on top of stack.`);
                             }, lineNumber - 1,
                         );
