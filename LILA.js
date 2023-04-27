@@ -24,7 +24,7 @@ export class LILA {
 
     memory = {};
 
-    registers = {
+    static registers = {
         areg: 0, // Accumulator Register
         breg: 0, // Base Register
         creg: 0, // Counter Register
@@ -32,6 +32,8 @@ export class LILA {
         sreg: 0, // Stack (Pointer) Register
         freg: 0, // (Stack) Frame (Pointer) Register
     };
+
+    registers = Object.assign({}, LILA.registers);
 
     #addressFrom(value) {
         return {
@@ -313,6 +315,9 @@ export class LILA {
             script[lineNumber] = script[lineNumber].replace(/^[^\S\n]*([_A-Za-z][_A-Za-z\d]*):\s*(\d+(\.\d+)?)\s*$/gm, (match, identifier, content) => {
                 if (identifier[0] === '_')
                     throw SyntaxError(`line ${lineNumber + 1}; The macro label "${identifier}" may not start with an underscore. Identifiers starting with underscores are reserved.`);
+
+                if (Object.keys(LILA.registers).includes(identifier.toLowerCase()))
+                    throw SyntaxError(`line ${lineNumber + 1}; The macro label "${identifier}" conflicts with the identifier of a register.`);
 
                 content = content.trim();
 
