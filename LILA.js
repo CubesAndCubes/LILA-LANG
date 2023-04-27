@@ -312,7 +312,7 @@ export class LILA {
 
             script[lineNumber] = script[lineNumber].replace(/^[^\S\n]*([_A-Za-z][_A-Za-z\d]*):\s*(\d+(\.\d+)?)\s*$/gm, (match, identifier, content) => {
                 if (identifier[0] === '_')
-                    throw SyntaxError(`line ${lineNumber + 1}; The label "${identifier}" may not start with an underscore. Identifiers starting with underscores are reserved.`);
+                    throw SyntaxError(`line ${lineNumber + 1}; The macro label "${identifier}" may not start with an underscore. Identifiers starting with underscores are reserved.`);
 
                 content = content.trim();
 
