@@ -168,6 +168,12 @@ export class LILA {
         );
     }
 
+    test(value, value2) {
+        this.#adjustFlags(
+            value & value2
+        );
+    }
+
     multiply(destination, value) {
         this.move(
             destination,
@@ -836,6 +842,25 @@ export class LILA {
                         this.#pushCode(
                             () => {
                                 this.compare(
+                                    this.retrieve(value1),
+                                    this.retrieve(value2),
+                                );
+                            }, lineNumber - 1,
+                        );
+
+                        continue;
+                    case 'TEST':
+                        value1 = readToken(['identifier', 'address', 'number']);
+
+                        readToken(['comma']);
+
+                        value2 = readToken(['identifier', 'address', 'number']);
+
+                        readToken(['endline']);
+
+                        this.#pushCode(
+                            () => {
+                                this.test(
                                     this.retrieve(value1),
                                     this.retrieve(value2),
                                 );
