@@ -112,6 +112,20 @@ export class LILA {
         throw ReferenceError(`line ${this.#debugLine}; Cannot get effective address of non-address (${source.value})`);
     }
 
+    exchange(destination1, destination2) {
+        const temp = this.retrieve(destination1);
+
+        this.move(
+            destination1,
+            this.retrieve(destination2),
+        );
+
+        this.move(
+            destination2,
+            temp,
+        );
+    }
+
     add(destination, value) {
         this.move(
             destination,
@@ -784,6 +798,26 @@ export class LILA {
                                 this.bitwiseUnsignedRightShift(
                                     destination,
                                     this.retrieve(source),
+                                );
+                            }, lineNumber - 1,
+                        );
+
+                        continue;
+                    case 'XCHG':
+                    case 'EXCHANGE':
+                        destination = readToken(['identifier', 'address']);
+
+                        readToken(['comma']);
+
+                        source = readToken(['identifier', 'address']);
+
+                        readToken(['endline']);
+
+                        this.#pushCode(
+                            () => {
+                                this.exchange(
+                                    destination,
+                                    source,
                                 );
                             }, lineNumber - 1,
                         );
