@@ -228,6 +228,15 @@ export class LILA {
         );
     }
 
+    negate(destination) {
+        this.move(
+            destination,
+            this.#adjustFlags(
+                this.retrieve(destination) * -1
+            ),
+        );
+    }
+
     bitwiseLeftShift(destination, value) {
         this.move(
             destination,
@@ -747,6 +756,19 @@ export class LILA {
                         this.#pushCode(
                             () => {
                                 this.bitwiseNot(destination);
+                            }, lineNumber - 1,
+                        );
+
+                        continue;
+                    case 'NEG':
+                    case 'NEGATE':
+                        destination = readToken(['identifier', 'address']);
+
+                        readToken(['endline']);
+
+                        this.#pushCode(
+                            () => {
+                                this.negate(destination);
                             }, lineNumber - 1,
                         );
 
