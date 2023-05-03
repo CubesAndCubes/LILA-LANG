@@ -508,19 +508,30 @@ export class LILA {
             };
 
             const readJump = condition => {
-                const label = readToken(['identifier']);
+                const destination = readToken(['identifier', 'number']);
 
                 readToken(['endline']);
 
-                this.#pushCode(
-                    () => {
-                        if (!(label.value in jumpAdresses))
-                            throw ReferenceError(`line ${this.#debugLine}; Attempted jump to undefined or invalid label "${label.value}".`);
+                if (destination.type === 'identifier')
+                    this.#pushCode(
+                        () => {
+                            if (!(destination.value in jumpAdresses))
+                                throw ReferenceError(`line ${this.#debugLine}; Attempted jump to undefined or invalid label "${destination.value}".`);
 
-                        if (condition())
-                            this.codePointer = jumpAdresses[label.value];
-                    }, lineNumber - 1,
-                );
+                            if (condition())
+                                this.codePointer = jumpAdresses[destination.value];
+                        }, lineNumber - 1,
+                    );
+                else
+                    this.#pushCode(
+                        () => {
+                            if (destination.value < 0 || destination.value > this.#code.length)
+                                throw RangeError(`line ${this.#debugLine}; Jumped out-of-bounds due to invalid address.`);
+
+                            if (condition())
+                                this.codePointer = destination.value;
+                        }, lineNumber - 1,
+                    );
             };
 
             if (peekToken().type === 'endline') {
