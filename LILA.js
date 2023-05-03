@@ -526,7 +526,7 @@ export class LILA {
                     this.#pushCode(
                         () => {
                             if (destination.value < 0 || destination.value > this.#code.length)
-                                throw RangeError(`line ${this.#debugLine}; Jumped out-of-bounds due to invalid address.`);
+                                throw RangeError(`line ${this.#debugLine}; Jumped out-of-bounds due to bad address.`);
 
                             if (condition())
                                 this.codePointer = destination.value;
@@ -954,7 +954,7 @@ export class LILA {
                                 this.codePointer = this.#popHelper();
 
                                 if (this.codePointer < 0 || this.codePointer > this.#code.length)
-                                    throw RangeError(`line ${this.#debugLine}; Jumped out-of-bounds due to invalid return address on top of stack.`);
+                                    throw RangeError(`line ${this.#debugLine}; Jumped out-of-bounds due to bad return address on top of stack.`);
                             }, lineNumber - 1,
                         );
 
