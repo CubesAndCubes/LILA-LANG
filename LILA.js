@@ -930,20 +930,32 @@ export class LILA {
 
                         continue;
                     case 'CALL':
-                        label = readToken(['identifier']);
+                        destination = readToken(['identifier', 'number', 'address']);
 
                         readToken(['endline']);
 
-                        this.#pushCode(
-                            () => {
-                                if (!(label.value in jumpAdresses))
-                                    throw ReferenceError(`line ${this.#debugLine}; Attempted call to undefined subroutine "${label.value}".`);
+                        if (destination.type === 'identifier')
+                            this.#pushCode(
+                                () => {
+                                    if (!(destination.value in jumpAdresses))
+                                        throw ReferenceError(`line ${this.#debugLine}; Attempted call to undefined subroutine "${destination.value}".`);
 
-                                this.push(this.#oldCodePointer + 1);
+                                    this.push(this.#oldCodePointer + 1);
 
-                                this.codePointer = jumpAdresses[label.value];
-                            }, lineNumber - 1,
-                        );
+                                    this.codePointer = jumpAdresses[destination.value];
+                                }, lineNumber - 1,
+                            );
+                        else
+                            this.#pushCode(
+                                () => {
+                                    this.push(this.#oldCodePointer + 1);
+
+                                    this.codePointer = this.retrieve(destination);
+
+                                    if (this.codePointer < 0 || this.codePointer > this.#code.length)
+                                        throw RangeError(`line ${this.#debugLine}; Jumped out-of-bounds due to the given address pointing outside the code space.`);
+                                }, lineNumber - 1,
+                            );
 
                         continue;
                     case 'RET':
