@@ -556,7 +556,6 @@ export class LILA {
                 let source;
                 let value1;
                 let value2;
-                let label;
 
                 switch (readToken(['identifier']).value.toUpperCase()) {
                     case 'MOV':
