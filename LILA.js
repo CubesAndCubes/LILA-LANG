@@ -1037,7 +1037,7 @@ export class LILA {
                 }
             }
 
-            throw SyntaxError(`line ${lineNumber}; Invalid sequence of tokens (${tokens.slice(i - 1).map(token => token.type).join(', ')}).`);
+            throw SyntaxError(`line ${lineNumber}; Invalid sequence of tokens (${tokens.slice(i - 1).map(token => `${token.type}${(token.type !== 'endline') ? ` "${token.value}"` : ''}`).join(', ')}).`);
         }
 
         this.#codeEntry = jumpAdresses['_start'];
