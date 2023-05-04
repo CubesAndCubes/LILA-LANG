@@ -508,7 +508,7 @@ export class LILA {
             };
 
             const readJump = condition => {
-                const destination = readToken(['identifier', 'number']);
+                const destination = readToken(['identifier', 'number', 'address']);
 
                 readToken(['endline']);
 
@@ -525,11 +525,12 @@ export class LILA {
                 else
                     this.#pushCode(
                         () => {
-                            if (destination.value < 0 || destination.value > this.#code.length)
-                                throw RangeError(`line ${this.#debugLine}; Jumped out-of-bounds due to the given address pointing outside the code space.`);
+                            if (condition()) {
+                                this.codePointer = this.retrieve(destination);
 
-                            if (condition())
-                                this.codePointer = destination.value;
+                                if (this.codePointer < 0 || this.codePointer > this.#code.length)
+                                    throw RangeError(`line ${this.#debugLine}; Jumped out-of-bounds due to the given address pointing outside the code space.`);
+                            }
                         }, lineNumber - 1,
                     );
             };
