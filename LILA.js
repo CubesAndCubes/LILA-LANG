@@ -475,6 +475,10 @@ export class LILA {
         throw ReferenceError(`line ${this.#debugLine}; Arithmetic expression (${expression}) contains illegal identifier(s).`);
     }
 
+    static #getTokenInfo(token) {
+        return `${token.type}${(token.type !== 'endline') ? ` "${token.value}"` : ''}`;
+    }
+
     constructor(script) {
         const [processedScript, entryMemory] = LILA.#preprocess(script);
 
@@ -497,7 +501,7 @@ export class LILA {
                 const nextToken = peekToken();
 
                 if (!types.includes(nextToken.type))
-                    throw SyntaxError(`line ${lineNumber}; Got unexpected token (${nextToken.type}${(nextToken.type !== 'endline') ? ` "${nextToken.value}"` : ''}), expected ${types.join(' or ')}.`);
+                    throw SyntaxError(`line ${lineNumber}; Got unexpected token (${LILA.#getTokenInfo(nextToken)}), expected ${types.join(' or ')}.`);
 
                 if (nextToken.type === 'endline')
                     lineNumber++;
@@ -1037,7 +1041,7 @@ export class LILA {
                 }
             }
 
-            throw SyntaxError(`line ${lineNumber}; Invalid token sequence (${tokens.slice(i - 1).map(token => `${token.type}${(token.type !== 'endline') ? ` "${token.value}"` : ''}`).join(', ')}).`);
+            throw SyntaxError(`line ${lineNumber}; Invalid token sequence (${tokens.slice(i - 1).map(token => LILA.#getTokenInfo(token)).join(', ')}).`);
         }
 
         this.#codeEntry = jumpAdresses['_start'];
