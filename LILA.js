@@ -266,6 +266,14 @@ export class LILA {
         this.#codeDebugLineReferences.push(sourceCodeLineNumber);
     }
 
+    get state() {
+        return {
+            flags: Object.assign({}, this.flags),
+            registers: Object.assign({}, this.registers),
+            memory: Object.assign({}, this.memory),
+        };
+    }
+
     exec() {
         this.memory = Object.assign({}, this.#entryMemory);
 
@@ -278,11 +286,7 @@ export class LILA {
             this.#code[this.#oldCodePointer = this.codePointer++]();
         }
 
-        return {
-            flags: Object.assign({}, this.flags),
-            registers: Object.assign({}, this.registers),
-            memory: Object.assign({}, this.memory),
-        };
+        return this.state;
     }
 
     #evaluateExpression(expression) {

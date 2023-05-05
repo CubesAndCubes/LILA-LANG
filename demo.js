@@ -65,10 +65,6 @@ codeinput.oninput = () => {
     catch(e) {
         codeoutput.innerHTML = `<div class="error">${e}</div>
 
-${generateStateInfo({
-    registers: Object.assign({}, program.registers),
-    flags: Object.assign({}, program.flags),
-    memory: Object.assign({}, program.memory),            
-})}`;
+${generateStateInfo(program.state)}`;
     }
 }
