@@ -354,14 +354,14 @@ export class LILA {
                             if (!(destination.value in jumpAdresses))
                                 throw ReferenceError(`line ${this.#debugLine}; Attempted jump to undefined or invalid label "${destination.value}".`);
 
-                            if (condition())
+                            if (!condition || condition())
                                 this.codePointer = jumpAdresses[destination.value];
                         }, lineNumber - 1,
                     );
                 else
                     this.#pushCode(
                         () => {
-                            if (condition()) {
+                            if (!condition || condition()) {
                                 this.codePointer = this.retrieve(destination);
 
                                 if (this.codePointer < 0 || this.codePointer > this.#code.length)
@@ -867,7 +867,7 @@ export class LILA {
                         continue;
                     case 'JMP':
                     case 'JUMP':
-                        readJump(() => true);
+                        readJump(null);
 
                         continue;
                     case 'JE': // jump if equal
