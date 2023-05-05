@@ -42,7 +42,7 @@ export class LILA {
         };
     }
 
-    push(value) {
+    #pushHelper(value) {
         this.move(
             this.#addressFrom(--this.registers.sreg),
             value,
@@ -52,13 +52,6 @@ export class LILA {
     #popHelper() {
         return this.retrieve(
             this.#addressFrom(this.registers.sreg++)
-        );
-    }
-
-    pop(destination) {
-        this.move(
-            destination,
-            this.#popHelper(),
         );
     }
 
@@ -97,171 +90,6 @@ export class LILA {
         }
 
         throw ReferenceError(`line ${this.#debugLine}; Invalid write destination (${destination.value})`);
-    }
-
-    loadEffectiveAddress(destination, source) {
-        if (source.type === 'address') {
-            this.move(
-                destination,
-                parseInt(this.#evaluateExpression(source.value)),
-            )
-
-            return;
-        }
-
-        throw ReferenceError(`line ${this.#debugLine}; Cannot get effective address of non-address (${source.value})`);
-    }
-
-    exchange(destination1, destination2) {
-        const temp = this.retrieve(destination1);
-
-        this.move(
-            destination1,
-            this.retrieve(destination2),
-        );
-
-        this.move(
-            destination2,
-            temp,
-        );
-    }
-
-    add(destination, value) {
-        this.move(
-            destination,
-            this.#adjustFlags(
-                this.retrieve(destination) + value
-            ),
-        );
-    }
-
-    increment(destination) {
-        this.move(
-            destination,
-            this.#adjustFlags(
-                this.retrieve(destination) + 1
-            ),
-        );
-    }
-
-    subtract(destination, value) {
-        this.move(
-            destination,
-            this.#adjustFlags(
-                this.retrieve(destination) - value
-            ),
-        );
-    }
-
-    decrement(destination) {
-        this.move(
-            destination,
-            this.#adjustFlags(
-                this.retrieve(destination) - 1
-            ),
-        );
-    }
-
-    compare(value, value2) {
-        this.#adjustFlags(
-            value - value2
-        );
-    }
-
-    test(value, value2) {
-        this.#adjustFlags(
-            value & value2
-        );
-    }
-
-    multiply(destination, value) {
-        this.move(
-            destination,
-            this.#adjustFlags(
-                this.retrieve(destination) * value
-            ),
-        );
-    }
-
-    divide(destination, value) {
-        this.move(
-            destination,
-            this.#adjustFlags(
-                this.retrieve(destination) / value
-            ),
-        );
-    }
-
-    bitwiseAnd(destination, value) {
-        this.move(
-            destination,
-            this.#adjustFlags(
-                this.retrieve(destination) & value
-            ),
-        );
-    }
-
-    bitwiseOr(destination, value) {
-        this.move(
-            destination,
-            this.#adjustFlags(
-                this.retrieve(destination) | value
-            ),
-        );
-    }
-
-    bitwiseExclusiveOr(destination, value) {
-        this.move(
-            destination,
-            this.#adjustFlags(
-                this.retrieve(destination) ^ value
-            ),
-        );
-    }
-
-    bitwiseNot(destination) {
-        this.move(
-            destination,
-            this.#adjustFlags(
-                ~ this.retrieve(destination)
-            ),
-        );
-    }
-
-    negate(destination) {
-        this.move(
-            destination,
-            this.#adjustFlags(
-                this.retrieve(destination) * -1
-            ),
-        );
-    }
-
-    bitwiseLeftShift(destination, value) {
-        this.move(
-            destination,
-            this.#adjustFlags(
-                this.retrieve(destination) << value
-            ),
-        );
-    }
-
-    bitwiseRightShift(destination, value) {
-        this.move(
-            destination,
-            this.#adjustFlags(
-                this.retrieve(destination) >> value
-            ),
-        );
-    }
-
-    bitwiseUnsignedRightShift(destination, value) {
-        this.move(
-            destination,
-            this.#adjustFlags(
-                this.retrieve(destination) >>> value
-            ),
-        );
     }
 
     static #preprocess(script) {
@@ -593,10 +421,10 @@ export class LILA {
 
                         this.#pushCode(
                             () => {
-                                this.loadEffectiveAddress(
+                                this.move(
                                     destination,
-                                    source,
-                                );
+                                    parseInt(this.#evaluateExpression(source.value)),
+                                )
                             }, lineNumber - 1,
                         );
 
@@ -609,7 +437,12 @@ export class LILA {
 
                         this.#pushCode(
                             () => {
-                                this.increment(destination);
+                                this.move(
+                                    destination,
+                                    this.#adjustFlags(
+                                        this.retrieve(destination) + 1
+                                    ),
+                                );
                             }, lineNumber - 1,
                         );
 
@@ -622,7 +455,12 @@ export class LILA {
 
                         this.#pushCode(
                             () => {
-                                this.decrement(destination);
+                                this.move(
+                                    destination,
+                                    this.#adjustFlags(
+                                        this.retrieve(destination) - 1
+                                    ),
+                                );
                             }, lineNumber - 1,
                         );
 
@@ -638,9 +476,11 @@ export class LILA {
 
                         this.#pushCode(
                             () => {
-                                this.add(
+                                this.move(
                                     destination,
-                                    this.retrieve(source),
+                                    this.#adjustFlags(
+                                        this.retrieve(destination) + this.retrieve(source)
+                                    ),
                                 );
                             }, lineNumber - 1,
                         );
@@ -658,9 +498,11 @@ export class LILA {
 
                         this.#pushCode(
                             () => {
-                                this.subtract(
+                                this.move(
                                     destination,
-                                    this.retrieve(source),
+                                    this.#adjustFlags(
+                                        this.retrieve(destination) - this.retrieve(source)
+                                    ),
                                 );
                             }, lineNumber - 1,
                         );
@@ -678,9 +520,11 @@ export class LILA {
 
                         this.#pushCode(
                             () => {
-                                this.multiply(
+                                this.move(
                                     destination,
-                                    this.retrieve(source),
+                                    this.#adjustFlags(
+                                        this.retrieve(destination) * this.retrieve(source)
+                                    ),
                                 );
                             }, lineNumber - 1,
                         );
@@ -698,9 +542,11 @@ export class LILA {
 
                         this.#pushCode(
                             () => {
-                                this.divide(
+                                this.move(
                                     destination,
-                                    this.retrieve(source),
+                                    this.#adjustFlags(
+                                        this.retrieve(destination) / this.retrieve(source)
+                                    ),
                                 );
                             }, lineNumber - 1,
                         );
@@ -717,9 +563,11 @@ export class LILA {
 
                         this.#pushCode(
                             () => {
-                                this.bitwiseAnd(
+                                this.move(
                                     destination,
-                                    this.retrieve(source),
+                                    this.#adjustFlags(
+                                        this.retrieve(destination) & this.retrieve(source)
+                                    ),
                                 );
                             }, lineNumber - 1,
                         );
@@ -735,10 +583,12 @@ export class LILA {
                         readToken(['endline']);
 
                         this.#pushCode(
-                            () => {
-                                this.bitwiseOr(
+                            () => {                                
+                                this.move(
                                     destination,
-                                    this.retrieve(source),
+                                    this.#adjustFlags(
+                                        this.retrieve(destination) | this.retrieve(source)
+                                    ),
                                 );
                             }, lineNumber - 1,
                         );
@@ -755,9 +605,11 @@ export class LILA {
 
                         this.#pushCode(
                             () => {
-                                this.bitwiseExclusiveOr(
+                                this.move(
                                     destination,
-                                    this.retrieve(source),
+                                    this.#adjustFlags(
+                                        this.retrieve(destination) ^ this.retrieve(source)
+                                    ),
                                 );
                             }, lineNumber - 1,
                         );
@@ -770,7 +622,12 @@ export class LILA {
 
                         this.#pushCode(
                             () => {
-                                this.bitwiseNot(destination);
+                                this.move(
+                                    destination,
+                                    this.#adjustFlags(
+                                        ~this.retrieve(destination)
+                                    ),
+                                );
                             }, lineNumber - 1,
                         );
 
@@ -783,7 +640,12 @@ export class LILA {
 
                         this.#pushCode(
                             () => {
-                                this.negate(destination);
+                                this.move(
+                                    destination,
+                                    this.#adjustFlags(
+                                        this.retrieve(destination) * -1
+                                    ),
+                                );
                             }, lineNumber - 1,
                         );
 
@@ -800,9 +662,11 @@ export class LILA {
 
                         this.#pushCode(
                             () => {
-                                this.bitwiseLeftShift(
+                                this.move(
                                     destination,
-                                    this.retrieve(source),
+                                    this.#adjustFlags(
+                                        this.retrieve(destination) << this.retrieve(source)
+                                    ),
                                 );
                             }, lineNumber - 1,
                         );
@@ -819,9 +683,11 @@ export class LILA {
 
                         this.#pushCode(
                             () => {
-                                this.bitwiseRightShift(
+                                this.move(
                                     destination,
-                                    this.retrieve(source),
+                                    this.#adjustFlags(
+                                        this.retrieve(destination) >> this.retrieve(source)
+                                    ),
                                 );
                             }, lineNumber - 1,
                         );
@@ -838,9 +704,11 @@ export class LILA {
 
                         this.#pushCode(
                             () => {
-                                this.bitwiseUnsignedRightShift(
+                                this.move(
                                     destination,
-                                    this.retrieve(source),
+                                    this.#adjustFlags(
+                                        this.retrieve(destination) >>> this.retrieve(source)
+                                    ),
                                 );
                             }, lineNumber - 1,
                         );
@@ -858,9 +726,16 @@ export class LILA {
 
                         this.#pushCode(
                             () => {
-                                this.exchange(
+                                const temp = this.retrieve(destination);
+
+                                this.move(
                                     destination,
+                                    this.retrieve(source),
+                                );
+
+                                this.move(
                                     source,
+                                    temp,
                                 );
                             }, lineNumber - 1,
                         );
@@ -878,9 +753,8 @@ export class LILA {
 
                         this.#pushCode(
                             () => {
-                                this.compare(
-                                    this.retrieve(value1),
-                                    this.retrieve(value2),
+                                this.#adjustFlags(
+                                    this.retrieve(value1) - this.retrieve(value2)
                                 );
                             }, lineNumber - 1,
                         );
@@ -897,9 +771,8 @@ export class LILA {
 
                         this.#pushCode(
                             () => {
-                                this.test(
-                                    this.retrieve(value1),
-                                    this.retrieve(value2),
+                                this.#adjustFlags(
+                                    this.retrieve(value1) & this.retrieve(value2)
                                 );
                             }, lineNumber - 1,
                         );
@@ -913,7 +786,7 @@ export class LILA {
 
                         this.#pushCode(
                             () => {
-                                this.push(
+                                this.#pushHelper(
                                     this.retrieve(value1)
                                 );
                             }, lineNumber - 1,
@@ -927,7 +800,10 @@ export class LILA {
 
                         this.#pushCode(
                             () => {
-                                this.pop(destination);
+                                this.move(
+                                    destination,
+                                    this.#popHelper(),
+                                );
                             }, lineNumber - 1,
                         );
 
@@ -943,7 +819,7 @@ export class LILA {
                                     if (!(destination.value in jumpAdresses))
                                         throw ReferenceError(`line ${this.#debugLine}; Attempted call to undefined subroutine "${destination.value}".`);
 
-                                    this.push(this.#oldCodePointer + 1);
+                                    this.#pushHelper(this.#oldCodePointer + 1);
 
                                     this.codePointer = jumpAdresses[destination.value];
                                 }, lineNumber - 1,
@@ -951,7 +827,7 @@ export class LILA {
                         else
                             this.#pushCode(
                                 () => {
-                                    this.push(this.#oldCodePointer + 1);
+                                    this.#pushHelper(this.#oldCodePointer + 1);
 
                                     this.codePointer = this.retrieve(destination);
 
