@@ -192,7 +192,7 @@ export class LILA {
 
     static #TokenTypes = {
         whitespace: /^[^\S\n]+/,
-        endline: /^\n/,
+        'line break': /^\n/,
         address: /^\[[^\S\n]*((-[^\S\n]*)?\d+(\.\d+)?|[_A-Za-z][_A-Za-z\d]*|([()]+[^\S\n]*)?((-[^\S\n]*)?\d+(\.\d+)?|[_A-Za-z][_A-Za-z\d]*)([^\S\n]*[()]+)?([^\S\n]*[+\-*\/%][*]?[^\S\n]*([()]+[^\S\n]*)?((-[^\S\n]*)?\d+(\.\d+)?|[_A-Za-z][_A-Za-z\d]*)([^\S\n]*[()]+)?)+)[^\S\n]*\]/,
         number: /^(-[^\S\n]*)?\d+(\.\d+)?/,
         comma: /^,/,
@@ -228,7 +228,7 @@ export class LILA {
                     if (tokenType === 'number' || (tokenType === 'address' && isFinite(match)))
                         match = Number(match);
 
-                    if (tokenType === 'endline')
+                    if (tokenType === 'line break')
                         lineNumber++;
 
                     result.push({
@@ -308,19 +308,15 @@ export class LILA {
     }
 
     static #getTokenInfo(token) {
-        let tokenValue;
+        let tokenValue = token.value;
 
         switch (token.type) {
-            case 'endline':
+            case 'line break':
                 tokenValue = null;
 
                 break;
             case 'address':
                 tokenValue = `[${token.value}]`;
-
-                break;
-            default:
-                tokenValue = token.value;
         }
 
         return `${tokenValue !== null ? `"${tokenValue}" ` : ''}(${token.type})`;
@@ -350,7 +346,7 @@ export class LILA {
                 if (!types.includes(nextToken.type))
                     throw SyntaxError(`line ${lineNumber}; Got unexpected token ${LILA.#getTokenInfo(nextToken)}, expected ${types.join(' or ')}.`);
 
-                if (nextToken.type === 'endline')
+                if (nextToken.type === 'line break')
                     lineNumber++;
 
                 i++;
@@ -361,7 +357,7 @@ export class LILA {
             const readJump = condition => {
                 const destination = readToken(['identifier', 'number', 'address']);
 
-                readToken(['endline']);
+                readToken(['line break']);
 
                 if (destination.type === 'identifier')
                     this.#pushCode(
@@ -386,8 +382,8 @@ export class LILA {
                     );
             };
 
-            if (peekToken().type === 'endline') {
-                readToken(['endline']);
+            if (peekToken().type === 'line break') {
+                readToken(['line break']);
 
                 continue;
             }
@@ -395,7 +391,7 @@ export class LILA {
             if (peekToken().type === 'jumplabel') {
                 const labelToken = readToken(['jumplabel']);
 
-                if (readToken(['endline'])) {
+                if (readToken(['line break'])) {
                     jumpAdresses[labelToken.value] = this.#code.length;
 
                     continue;
@@ -417,7 +413,7 @@ export class LILA {
                         
                         source = readToken(['identifier', 'address', 'number']);
 
-                        readToken(['endline']);
+                        readToken(['line break']);
 
                         this.#pushCode(
                             () => {
@@ -436,7 +432,7 @@ export class LILA {
 
                         source = readToken(['address']);
 
-                        readToken(['endline']);
+                        readToken(['line break']);
 
                         this.#pushCode(
                             () => {
@@ -452,7 +448,7 @@ export class LILA {
                     case 'INCREMENT':
                         destination = readToken(['identifier', 'address']);
 
-                        readToken(['endline']);
+                        readToken(['line break']);
 
                         this.#pushCode(
                             () => {
@@ -470,7 +466,7 @@ export class LILA {
                     case 'DECREMENT':
                         destination = readToken(['identifier', 'address']);
 
-                        readToken(['endline']);
+                        readToken(['line break']);
 
                         this.#pushCode(
                             () => {
@@ -491,7 +487,7 @@ export class LILA {
 
                         source = readToken(['identifier', 'address', 'number']);
 
-                        readToken(['endline']);
+                        readToken(['line break']);
 
                         this.#pushCode(
                             () => {
@@ -513,7 +509,7 @@ export class LILA {
 
                         source = readToken(['identifier', 'address', 'number']);
 
-                        readToken(['endline']);
+                        readToken(['line break']);
 
                         this.#pushCode(
                             () => {
@@ -535,7 +531,7 @@ export class LILA {
 
                         source = readToken(['identifier', 'address', 'number']);
 
-                        readToken(['endline']);
+                        readToken(['line break']);
 
                         this.#pushCode(
                             () => {
@@ -557,7 +553,7 @@ export class LILA {
 
                         source = readToken(['identifier', 'address', 'number']);
 
-                        readToken(['endline']);
+                        readToken(['line break']);
 
                         this.#pushCode(
                             () => {
@@ -578,7 +574,7 @@ export class LILA {
 
                         source = readToken(['identifier', 'address', 'number']);
 
-                        readToken(['endline']);
+                        readToken(['line break']);
 
                         this.#pushCode(
                             () => {
@@ -599,7 +595,7 @@ export class LILA {
 
                         source = readToken(['identifier', 'address', 'number']);
 
-                        readToken(['endline']);
+                        readToken(['line break']);
 
                         this.#pushCode(
                             () => {                                
@@ -620,7 +616,7 @@ export class LILA {
 
                         source = readToken(['identifier', 'address', 'number']);
 
-                        readToken(['endline']);
+                        readToken(['line break']);
 
                         this.#pushCode(
                             () => {
@@ -637,7 +633,7 @@ export class LILA {
                     case 'NOT':
                         destination = readToken(['identifier', 'address']);
 
-                        readToken(['endline']);
+                        readToken(['line break']);
 
                         this.#pushCode(
                             () => {
@@ -655,7 +651,7 @@ export class LILA {
                     case 'NEGATE':
                         destination = readToken(['identifier', 'address']);
 
-                        readToken(['endline']);
+                        readToken(['line break']);
 
                         this.#pushCode(
                             () => {
@@ -677,7 +673,7 @@ export class LILA {
 
                         source = readToken(['identifier', 'address', 'number']);
 
-                        readToken(['endline']);
+                        readToken(['line break']);
 
                         this.#pushCode(
                             () => {
@@ -698,7 +694,7 @@ export class LILA {
 
                         source = readToken(['identifier', 'address', 'number']);
 
-                        readToken(['endline']);
+                        readToken(['line break']);
 
                         this.#pushCode(
                             () => {
@@ -719,7 +715,7 @@ export class LILA {
 
                         source = readToken(['identifier', 'address', 'number']);
 
-                        readToken(['endline']);
+                        readToken(['line break']);
 
                         this.#pushCode(
                             () => {
@@ -741,7 +737,7 @@ export class LILA {
 
                         source = readToken(['identifier', 'address']);
 
-                        readToken(['endline']);
+                        readToken(['line break']);
 
                         this.#pushCode(
                             () => {
@@ -768,7 +764,7 @@ export class LILA {
 
                         value2 = readToken(['identifier', 'address', 'number']);
 
-                        readToken(['endline']);
+                        readToken(['line break']);
 
                         this.#pushCode(
                             () => {
@@ -786,7 +782,7 @@ export class LILA {
 
                         value2 = readToken(['identifier', 'address', 'number']);
 
-                        readToken(['endline']);
+                        readToken(['line break']);
 
                         this.#pushCode(
                             () => {
@@ -801,7 +797,7 @@ export class LILA {
                     case 'PUSH':
                         value1 = readToken(['identifier', 'address', 'number']);
 
-                        readToken(['endline']);
+                        readToken(['line break']);
 
                         this.#pushCode(
                             () => {
@@ -815,7 +811,7 @@ export class LILA {
                     case 'POP':
                         destination = readToken(['identifier', 'address']);
 
-                        readToken(['endline']);
+                        readToken(['line break']);
 
                         this.#pushCode(
                             () => {
@@ -830,7 +826,7 @@ export class LILA {
                     case 'CALL':
                         destination = readToken(['identifier', 'number', 'address']);
 
-                        readToken(['endline']);
+                        readToken(['line break']);
 
                         if (destination.type === 'identifier')
                             this.#pushCode(
@@ -858,7 +854,7 @@ export class LILA {
                         continue;
                     case 'RET':
                     case 'RETURN':
-                        readToken(['endline']);
+                        readToken(['line break']);
 
                         this.#pushCode(
                             () => {
@@ -871,7 +867,7 @@ export class LILA {
 
                         continue;
                     case 'EXIT':
-                        readToken(['endline']);
+                        readToken(['line break']);
 
                         this.#pushCode(
                             () => {
