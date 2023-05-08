@@ -241,7 +241,7 @@ export class LILA {
             }
 
             if (!tokenFound)
-                throw SyntaxError(`line ${lineNumber}; Unknown token (${script}).`);
+                throw SyntaxError(`line ${lineNumber}; Unknown token (${script.trim()}).`);
         }
 
         return result;
