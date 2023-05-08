@@ -308,7 +308,22 @@ export class LILA {
     }
 
     static #getTokenInfo(token) {
-        return `${token.type}${(token.type !== 'endline') ? ` "${token.value}"` : ''}`;
+        let tokenValue;
+
+        switch (token.type) {
+            case 'endline':
+                tokenValue = null;
+
+                break;
+            case 'address':
+                tokenValue = `[${token.value}]`;
+
+                break;
+            default:
+                tokenValue = token.value;
+        }
+
+        return `${tokenValue !== null ? `"${tokenValue}" ` : ''}(${token.type})`;
     }
 
     constructor(script) {
@@ -333,7 +348,7 @@ export class LILA {
                 const nextToken = peekToken();
 
                 if (!types.includes(nextToken.type))
-                    throw SyntaxError(`line ${lineNumber}; Got unexpected token (${LILA.#getTokenInfo(nextToken)}), expected ${types.join(' or ')}.`);
+                    throw SyntaxError(`line ${lineNumber}; Got unexpected token ${LILA.#getTokenInfo(nextToken)}, expected ${types.join(' or ')}.`);
 
                 if (nextToken.type === 'endline')
                     lineNumber++;
@@ -921,7 +936,7 @@ export class LILA {
                 }
             }
 
-            throw SyntaxError(`line ${lineNumber}; Invalid token sequence (${tokens.slice(i - 1).map(token => LILA.#getTokenInfo(token)).join(', ')}).`);
+            throw SyntaxError(`line ${lineNumber}; Invalid token sequence ${tokens.slice(i - 1).map(token => LILA.#getTokenInfo(token)).join(', ')}.`);
         }
 
         this.#codeEntry = jumpAdresses['_start'];
