@@ -312,8 +312,7 @@ export class LILA {
 
         switch (token.type) {
             case 'line break':
-            case 'comma':
-                tokenValue = null;
+                tokenValue = '\\n';
 
                 break;
             case 'address':
