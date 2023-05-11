@@ -344,7 +344,7 @@ export class LILA {
                 const nextToken = peekToken();
 
                 if (!types.includes(nextToken.type))
-                    throw SyntaxError(`line ${lineNumber}; Got unexpected token ${LILA.#getTokenInfo(nextToken)}, expected ${types.map(type => (type === 'line break' ? 'end of instruction' : type)).join(' or ')}.`);
+                    throw SyntaxError(`line ${lineNumber}; Got unexpected token ${LILA.#getTokenInfo(nextToken)}. Expected ${types.map(type => (type === 'line break' ? 'end of instruction' : type)).join(' or ')}.`);
 
                 if (nextToken.type === 'line break')
                     lineNumber++;
