@@ -70,7 +70,7 @@ export class LILA {
                     return this.registers[source.value.toLowerCase()] ?? 0;
         }
         
-        throw ReferenceError(`line ${this.#debugLine}; Invalid retrieval source (${source.value})`);
+        throw ReferenceError(`On line ${this.#debugLine}; Invalid retrieval source (${source.value})`);
     }
 
     move(destination, value) {
@@ -89,7 +89,7 @@ export class LILA {
                     );
         }
 
-        throw ReferenceError(`line ${this.#debugLine}; Invalid write destination (${destination.value})`);
+        throw ReferenceError(`On line ${this.#debugLine}; Invalid write destination (${destination.value})`);
     }
 
     static #preprocess(script) {
@@ -171,10 +171,10 @@ export class LILA {
 
             script[lineNumber] = script[lineNumber].replace(/^[^\S\n]*([_A-Za-z][_A-Za-z\d]*):\s*(\d+(\.\d+)?)\s*$/gm, (match, identifier, content) => {
                 if (identifier[0] === '_')
-                    throw SyntaxError(`line ${lineNumber + 1}; The macro label "${identifier}" may not start with an underscore. Identifiers starting with underscores are reserved.`);
+                    throw SyntaxError(`On line ${lineNumber + 1}; The macro label "${identifier}" may not start with an underscore. Identifiers starting with underscores are reserved.`);
 
                 if (Object.keys(LILA.registers).includes(identifier.toLowerCase()))
-                    throw SyntaxError(`line ${lineNumber + 1}; The macro label "${identifier}" conflicts with the identifier of a register.`);
+                    throw SyntaxError(`On line ${lineNumber + 1}; The macro label "${identifier}" conflicts with the identifier of a register.`);
 
                 content = content.trim();
 
@@ -241,7 +241,7 @@ export class LILA {
             }
 
             if (!tokenFound)
-                throw SyntaxError(`line ${lineNumber}; Unknown token (${script.trim()}).`);
+                throw SyntaxError(`On line ${lineNumber}; Unknown token (${script.trim()}).`);
         }
 
         return result;
@@ -304,7 +304,7 @@ export class LILA {
         if (!expression.match(/[^\d+\-*\/%()\s.]/))
             return Number(eval(expression));
 
-        throw ReferenceError(`line ${this.#debugLine}; Arithmetic expression (${expression}) contains illegal identifier(s).`);
+        throw ReferenceError(`On line ${this.#debugLine}; Arithmetic expression (${expression}) contains illegal identifier(s).`);
     }
 
     static #getTokenInfo(token) {
@@ -344,7 +344,7 @@ export class LILA {
                 const nextToken = peekToken();
 
                 if (!types.includes(nextToken.type))
-                    throw SyntaxError(`line ${lineNumber}; Got unexpected token ${LILA.#getTokenInfo(nextToken)}. Expected ${types.map(type => (type === 'line break' ? 'end of instruction' : type)).join(' or ')}.`);
+                    throw SyntaxError(`On line ${lineNumber}; Got unexpected token ${LILA.#getTokenInfo(nextToken)}. Expected ${types.map(type => (type === 'line break' ? 'end of instruction' : type)).join(' or ')}.`);
 
                 if (nextToken.type === 'line break')
                     lineNumber++;
@@ -363,7 +363,7 @@ export class LILA {
                     this.#pushCode(
                         () => {
                             if (!(destination.value in jumpAdresses))
-                                throw ReferenceError(`line ${this.#debugLine}; Attempted jump to undefined or invalid label "${destination.value}".`);
+                                throw ReferenceError(`On line ${this.#debugLine}; Attempted jump to undefined or invalid label "${destination.value}".`);
 
                             if (!condition || condition())
                                 this.codePointer = jumpAdresses[destination.value];
@@ -376,7 +376,7 @@ export class LILA {
                                 this.codePointer = this.retrieve(destination);
 
                                 if (this.codePointer < 0 || this.codePointer > this.#code.length)
-                                    throw RangeError(`line ${this.#debugLine}; Jumped out-of-bounds due to the given address pointing outside the code space.`);
+                                    throw RangeError(`On line ${this.#debugLine}; Jumped out-of-bounds due to the given address pointing outside the code space.`);
                             }
                         }, lineNumber - 1,
                     );
@@ -832,7 +832,7 @@ export class LILA {
                             this.#pushCode(
                                 () => {
                                     if (!(destination.value in jumpAdresses))
-                                        throw ReferenceError(`line ${this.#debugLine}; Attempted call to undefined subroutine "${destination.value}".`);
+                                        throw ReferenceError(`On line ${this.#debugLine}; Attempted call to undefined subroutine "${destination.value}".`);
 
                                     this.#pushHelper(this.#oldCodePointer + 1);
 
@@ -847,7 +847,7 @@ export class LILA {
                                     this.codePointer = this.retrieve(destination);
 
                                     if (this.codePointer < 0 || this.codePointer > this.#code.length)
-                                        throw RangeError(`line ${this.#debugLine}; Jumped out-of-bounds due to the given address pointing outside the code space.`);
+                                        throw RangeError(`On line ${this.#debugLine}; Jumped out-of-bounds due to the given address pointing outside the code space.`);
                                 }, lineNumber - 1,
                             );
 
@@ -861,7 +861,7 @@ export class LILA {
                                 this.codePointer = this.#popHelper();
 
                                 if (this.codePointer < 0 || this.codePointer > this.#code.length)
-                                    throw RangeError(`line ${this.#debugLine}; Jumped out-of-bounds due to the return address on top of the stack pointing outside the code space.`);
+                                    throw RangeError(`On line ${this.#debugLine}; Jumped out-of-bounds due to the return address on top of the stack pointing outside the code space.`);
                             }, lineNumber - 1,
                         );
 
@@ -932,7 +932,7 @@ export class LILA {
                 }
             }
 
-            throw SyntaxError(`line ${lineNumber}; Invalid token sequence ${tokens.slice(i - 1).map(token => LILA.#getTokenInfo(token)).join(', ')}.`);
+            throw SyntaxError(`On line ${lineNumber}; Invalid token sequence ${tokens.slice(i - 1).map(token => LILA.#getTokenInfo(token)).join(', ')}.`);
         }
 
         this.#codeEntry = jumpAdresses['_start'];
