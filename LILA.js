@@ -372,28 +372,22 @@ export class LILA {
                 readToken(['line break']);
 
                 if (destination.type === 'identifier')
-                    return [
-                        () => {
-                            if (!(destination.value in jumpAdresses))
-                                throw ReferenceError(`On line ${this.#debugLine}; Attempted jump to undefined or invalid label "${destination.value}".`);
+                    return () => {
+                        if (!(destination.value in jumpAdresses))
+                            throw ReferenceError(`On line ${this.#debugLine}; Attempted jump to undefined or invalid label "${destination.value}".`);
 
-                            if (!condition || condition())
-                                this.codePointer = jumpAdresses[destination.value];
-                        },
-                        lineNumber - 1,
-                    ];
+                        if (!condition || condition())
+                            this.codePointer = jumpAdresses[destination.value];
+                    };
 
-                return [
-                    () => {
-                        if (!condition || condition()) {
-                            this.codePointer = this.retrieve(destination);
+                return () => {
+                    if (!condition || condition()) {
+                        this.codePointer = this.retrieve(destination);
 
-                            if (this.codePointer < 0 || this.codePointer > this.#code.length)
-                                throw RangeError(`On line ${this.#debugLine}; Jumped out-of-bounds due to the given address pointing outside the code space.`);
-                        }
-                    },
-                    lineNumber - 1,
-                ];
+                        if (this.codePointer < 0 || this.codePointer > this.#code.length)
+                            throw RangeError(`On line ${this.#debugLine}; Jumped out-of-bounds due to the given address pointing outside the code space.`);
+                    }
+                };
             };
 
             if (peekToken().type === 'line break') {
@@ -413,7 +407,7 @@ export class LILA {
             }
 
             if (peekToken().type === 'identifier') {
-                const [code, code_line_number] = this.#matchHelper(
+                const code = this.#matchHelper(
                     readToken(['identifier']).value.toUpperCase(),
                     () => {
                         throw SyntaxError(`On line ${lineNumber}; Invalid token sequence ${tokens.slice(i - 1).map(token => LILA.#getTokenInfo(token)).join(', ')}.`);
@@ -427,15 +421,12 @@ export class LILA {
 
                         readToken(['line break']);
 
-                        return [
-                            () => {
-                                this.move(
-                                    destination,
-                                    this.retrieve(source),
-                                );
-                            },
-                            lineNumber - 1,
-                        ]
+                        return () => {
+                            this.move(
+                                destination,
+                                this.retrieve(source),
+                            );
+                        };
                     }],
                     [['LEA'], () => {
                         const destination = readToken(['identifier', 'address']);
@@ -446,49 +437,40 @@ export class LILA {
 
                         readToken(['line break']);
 
-                        return [
-                            () => {
-                                this.move(
-                                    destination,
-                                    parseInt(this.#evaluateExpression(source.value)),
-                                )
-                            },
-                            lineNumber - 1,
-                        ];
+                        return () => {
+                            this.move(
+                                destination,
+                                parseInt(this.#evaluateExpression(source.value)),
+                            )
+                        };
                     }],
                     [['INC', 'INCREMENT'], () => {
                         const destination = readToken(['identifier', 'address']);
 
                         readToken(['line break']);
 
-                        return [
-                            () => {
-                                this.move(
-                                    destination,
-                                    this.#adjustFlags(
-                                        this.retrieve(destination) + 1
-                                    ),
-                                );
-                            },
-                            lineNumber - 1,
-                        ];
+                        return () => {
+                            this.move(
+                                destination,
+                                this.#adjustFlags(
+                                    this.retrieve(destination) + 1
+                                ),
+                            );
+                        };
                     }],
                     [['DEC', 'DECREMENT'], () => {
                         const destination = readToken(['identifier', 'address']);
 
                         readToken(['line break']);
 
-                        return [
-                            () => {
-                                this.move(
-                                    destination,
-                                    this.#adjustFlags(
-                                        this.retrieve(destination) - 1
-                                    ),
-                                );
-                            },
-                            lineNumber - 1,
-                        ];
+                        return () => {
+                            this.move(
+                                destination,
+                                this.#adjustFlags(
+                                    this.retrieve(destination) - 1
+                                ),
+                            );
+                        };
                     }],
                     [['ADD'], () => {
                         const destination = readToken(['identifier', 'address']);
@@ -499,17 +481,14 @@ export class LILA {
 
                         readToken(['line break']);
 
-                        return [
-                            () => {
-                                this.move(
-                                    destination,
-                                    this.#adjustFlags(
-                                        this.retrieve(destination) + this.retrieve(source)
-                                    ),
-                                );
-                            },
-                            lineNumber - 1,
-                        ];
+                        return () => {
+                            this.move(
+                                destination,
+                                this.#adjustFlags(
+                                    this.retrieve(destination) + this.retrieve(source)
+                                ),
+                            );
+                        };
                     }],
                     [['SUB', 'SUBTRACT'], () => {
                         const destination = readToken(['identifier', 'address']);
@@ -520,17 +499,14 @@ export class LILA {
 
                         readToken(['line break']);
 
-                        return [
-                            () => {
-                                this.move(
-                                    destination,
-                                    this.#adjustFlags(
-                                        this.retrieve(destination) - this.retrieve(source)
-                                    ),
-                                );
-                            },
-                            lineNumber - 1,
-                        ];
+                        return () => {
+                            this.move(
+                                destination,
+                                this.#adjustFlags(
+                                    this.retrieve(destination) - this.retrieve(source)
+                                ),
+                            );
+                        };
                     }],
                     [['MUL', 'MULTIPLY'], () => {
                         const destination = readToken(['identifier', 'address']);
@@ -541,17 +517,14 @@ export class LILA {
 
                         readToken(['line break']);
 
-                        return [
-                            () => {
-                                this.move(
-                                    destination,
-                                    this.#adjustFlags(
-                                        this.retrieve(destination) * this.retrieve(source)
-                                    ),
-                                );
-                            },
-                            lineNumber - 1,
-                        ];
+                        return () => {
+                            this.move(
+                                destination,
+                                this.#adjustFlags(
+                                    this.retrieve(destination) * this.retrieve(source)
+                                ),
+                            );
+                        };
                     }],
                     [['DIV', 'DIVIDE'], () => {
                         const destination = readToken(['identifier', 'address']);
@@ -562,17 +535,14 @@ export class LILA {
 
                         readToken(['line break']);
 
-                        return [
-                            () => {
-                                this.move(
-                                    destination,
-                                    this.#adjustFlags(
-                                        this.retrieve(destination) / this.retrieve(source)
-                                    ),
-                                );
-                            },
-                            lineNumber - 1,
-                        ];
+                        return () => {
+                            this.move(
+                                destination,
+                                this.#adjustFlags(
+                                    this.retrieve(destination) / this.retrieve(source)
+                                ),
+                            );
+                        };
                     }],
                     [['AND'], () => {
                         const destination = readToken(['identifier', 'address']);
@@ -583,17 +553,14 @@ export class LILA {
 
                         readToken(['line break']);
 
-                        return [
-                            () => {
-                                this.move(
-                                    destination,
-                                    this.#adjustFlags(
-                                        this.retrieve(destination) & this.retrieve(source)
-                                    ),
-                                );
-                            },
-                            lineNumber - 1,
-                        ];
+                        return () => {
+                            this.move(
+                                destination,
+                                this.#adjustFlags(
+                                    this.retrieve(destination) & this.retrieve(source)
+                                ),
+                            );
+                        };
                     }],
                     [['OR'], () => {
                         const destination = readToken(['identifier', 'address']);
@@ -604,17 +571,14 @@ export class LILA {
 
                         readToken(['line break']);
 
-                        return [
-                            () => {
-                                this.move(
-                                    destination,
-                                    this.#adjustFlags(
-                                        this.retrieve(destination) | this.retrieve(source)
-                                    ),
-                                );
-                            },
-                            lineNumber - 1,
-                        ];
+                        return () => {
+                            this.move(
+                                destination,
+                                this.#adjustFlags(
+                                    this.retrieve(destination) | this.retrieve(source)
+                                ),
+                            );
+                        };
                     }],
                     [['XOR'], () => {
                         const destination = readToken(['identifier', 'address']);
@@ -625,51 +589,42 @@ export class LILA {
 
                         readToken(['line break']);
 
-                        return [
-                            () => {
-                                this.move(
-                                    destination,
-                                    this.#adjustFlags(
-                                        this.retrieve(destination) ^ this.retrieve(source)
-                                    ),
-                                );
-                            },
-                            lineNumber - 1,
-                        ];
+                        return () => {
+                            this.move(
+                                destination,
+                                this.#adjustFlags(
+                                    this.retrieve(destination) ^ this.retrieve(source)
+                                ),
+                            );
+                        };
                     }],
                     [['NOT'], () => {
                         const destination = readToken(['identifier', 'address']);
 
                         readToken(['line break']);
 
-                        return [
-                            () => {
-                                this.move(
-                                    destination,
-                                    this.#adjustFlags(
-                                        ~this.retrieve(destination)
-                                    ),
-                                );
-                            },
-                            lineNumber - 1,
-                        ];
+                        return () => {
+                            this.move(
+                                destination,
+                                this.#adjustFlags(
+                                    ~this.retrieve(destination)
+                                ),
+                            );
+                        };
                     }],
                     [['NEG', 'NEGATE'], () => {
                         const destination = readToken(['identifier', 'address']);
 
                         readToken(['line break']);
 
-                        return [
-                            () => {
-                                this.move(
-                                    destination,
-                                    this.#adjustFlags(
-                                        this.retrieve(destination) * -1
-                                    ),
-                                );
-                            },
-                            lineNumber - 1,
-                        ];
+                        return () => {
+                            this.move(
+                                destination,
+                                this.#adjustFlags(
+                                    this.retrieve(destination) * -1
+                                ),
+                            );
+                        };
                     }],
                     [['SAL', 'SHL'], () => {
                         const destination = readToken(['identifier', 'address']);
@@ -680,17 +635,14 @@ export class LILA {
 
                         readToken(['line break']);
 
-                        return [
-                            () => {
-                                this.move(
-                                    destination,
-                                    this.#adjustFlags(
-                                        this.retrieve(destination) << this.retrieve(source)
-                                    ),
-                                );
-                            },
-                            lineNumber - 1,
-                        ];
+                        return () => {
+                            this.move(
+                                destination,
+                                this.#adjustFlags(
+                                    this.retrieve(destination) << this.retrieve(source)
+                                ),
+                            );
+                        };
                     }],
                     [['SAR'], () => {
                         const destination = readToken(['identifier', 'address']);
@@ -701,17 +653,14 @@ export class LILA {
 
                         readToken(['line break']);
 
-                        return [
-                            () => {
-                                this.move(
-                                    destination,
-                                    this.#adjustFlags(
-                                        this.retrieve(destination) >> this.retrieve(source)
-                                    ),
-                                );
-                            },
-                            lineNumber - 1,
-                        ];
+                        return () => {
+                            this.move(
+                                destination,
+                                this.#adjustFlags(
+                                    this.retrieve(destination) >> this.retrieve(source)
+                                ),
+                            );
+                        };
                     }],
                     [['SHR'], () => {
                         const destination = readToken(['identifier', 'address']);
@@ -722,17 +671,14 @@ export class LILA {
 
                         readToken(['line break']);
 
-                        return [
-                            () => {
-                                this.move(
-                                    destination,
-                                    this.#adjustFlags(
-                                        this.retrieve(destination) >>> this.retrieve(source)
-                                    ),
-                                );
-                            },
-                            lineNumber - 1,
-                        ];
+                        return () => {
+                            this.move(
+                                destination,
+                                this.#adjustFlags(
+                                    this.retrieve(destination) >>> this.retrieve(source)
+                                ),
+                            );
+                        };
                     }],
                     [['XCHG', 'EXCHANGE'], () => {
                         const destination = readToken(['identifier', 'address']);
@@ -743,22 +689,19 @@ export class LILA {
 
                         readToken(['line break']);
 
-                        return [
-                            () => {
-                                const temp = this.retrieve(destination);
+                        return () => {
+                            const temp = this.retrieve(destination);
 
-                                this.move(
-                                    destination,
-                                    this.retrieve(source),
-                                );
+                            this.move(
+                                destination,
+                                this.retrieve(source),
+                            );
 
-                                this.move(
-                                    source,
-                                    temp,
-                                );
-                            },
-                            lineNumber - 1,
-                        ];
+                            this.move(
+                                source,
+                                temp,
+                            );
+                        };
                     }],
                     [['CMP', 'COMPARE'], () => {
                         const value1 = readToken(['identifier', 'address', 'number']);
@@ -769,14 +712,11 @@ export class LILA {
 
                         readToken(['line break']);
 
-                        return [
-                            () => {
-                                this.#adjustFlags(
-                                    this.retrieve(value1) - this.retrieve(value2)
-                                );
-                            },
-                            lineNumber - 1,
-                        ];
+                        return () => {
+                            this.#adjustFlags(
+                                this.retrieve(value1) - this.retrieve(value2)
+                            );
+                        };
                     }],
                     [['TEST'], () => {
                         const value1 = readToken(['identifier', 'address', 'number']);
@@ -787,43 +727,34 @@ export class LILA {
 
                         readToken(['line break']);
 
-                        return [
-                            () => {
-                                this.#adjustFlags(
-                                    this.retrieve(value1) & this.retrieve(value2)
-                                );
-                            },
-                            lineNumber - 1,
-                        ];
+                        return () => {
+                            this.#adjustFlags(
+                                this.retrieve(value1) & this.retrieve(value2)
+                            );
+                        };
                     }],
                     [['PSH', 'PUSH'], () => {
                         const value1 = readToken(['identifier', 'address', 'number']);
 
                         readToken(['line break']);
 
-                        return [
-                            () => {
-                                this.#pushHelper(
-                                    this.retrieve(value1)
-                                );
-                            },
-                            lineNumber - 1,
-                        ];
+                        return () => {
+                            this.#pushHelper(
+                                this.retrieve(value1)
+                            );
+                        };
                     }],
                     [['POP'], () => {
                         const destination = readToken(['identifier', 'address']);
 
                         readToken(['line break']);
 
-                        return [
-                            () => {
-                                this.move(
-                                    destination,
-                                    this.#popHelper(),
-                                );
-                            },
-                            lineNumber - 1,
-                        ];
+                        return () => {
+                            this.move(
+                                destination,
+                                this.#popHelper(),
+                            );
+                        };
                     }],
                     [['CALL'], () => {
                         const destination = readToken(['identifier', 'number', 'address']);
@@ -831,52 +762,40 @@ export class LILA {
                         readToken(['line break']);
 
                         if (destination.type === 'identifier')
-                            return [
-                                () => {
-                                    if (!(destination.value in jumpAdresses))
-                                        throw ReferenceError(`On line ${this.#debugLine}; Attempted call to undefined subroutine "${destination.value}".`);
+                            return () => {
+                                if (!(destination.value in jumpAdresses))
+                                    throw ReferenceError(`On line ${this.#debugLine}; Attempted call to undefined subroutine "${destination.value}".`);
 
-                                    this.#pushHelper(this.#oldCodePointer + 1);
-
-                                    this.codePointer = jumpAdresses[destination.value];
-                                },
-                                lineNumber - 1,
-                            ];
-
-                        return [
-                            () => {
                                 this.#pushHelper(this.#oldCodePointer + 1);
 
-                                this.codePointer = this.retrieve(destination);
+                                this.codePointer = jumpAdresses[destination.value];
+                            };
 
-                                if (this.codePointer < 0 || this.codePointer > this.#code.length)
-                                    throw RangeError(`On line ${this.#debugLine}; Jumped out-of-bounds due to the given address pointing outside the code space.`);
-                            },
-                            lineNumber - 1,
-                        ];
+                        return () => {
+                            this.#pushHelper(this.#oldCodePointer + 1);
+
+                            this.codePointer = this.retrieve(destination);
+
+                            if (this.codePointer < 0 || this.codePointer > this.#code.length)
+                                throw RangeError(`On line ${this.#debugLine}; Jumped out-of-bounds due to the given address pointing outside the code space.`);
+                        };
                     }],
                     [['RET', 'RETURN'], () => {
                         readToken(['line break']);
 
-                        return [
-                            () => {
-                                this.codePointer = this.#popHelper();
+                        return () => {
+                            this.codePointer = this.#popHelper();
 
-                                if (this.codePointer < 0 || this.codePointer > this.#code.length)
-                                    throw RangeError(`On line ${this.#debugLine}; Jumped out-of-bounds due to the return address on top of the stack pointing outside the code space.`);
-                            },
-                            lineNumber - 1,
-                        ];
+                            if (this.codePointer < 0 || this.codePointer > this.#code.length)
+                                throw RangeError(`On line ${this.#debugLine}; Jumped out-of-bounds due to the return address on top of the stack pointing outside the code space.`);
+                        };
                     }],
                     [['EXIT'], () => {
                         readToken(['line break']);
 
-                        return [
-                            () => {
-                                this.codePointer = this.#code.length;
-                            },
-                            lineNumber - 1,
-                        ];
+                        return () => {
+                            this.codePointer = this.#code.length;
+                        };
                     }],
                     [['JMP', 'JUMP'], () => readJump(null)],
                     [[
@@ -921,7 +840,7 @@ export class LILA {
 
                 this.#pushCode(
                     code,
-                    code_line_number,
+                    lineNumber - 1,
                 );
             }
         }
