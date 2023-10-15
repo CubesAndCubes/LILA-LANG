@@ -322,6 +322,18 @@ export class LILA {
         return `${tokenValue !== null ? `"${tokenValue}" ` : ''}(${token.type})`;
     }
 
+    #matchHelper(sample, fallback_action, ...cases) {
+        for (const match_case of cases) {
+            const patterns = match_case[0];
+            const action = match_case[1];
+
+            if (patterns.includes(sample))
+                return action(sample);
+        }
+
+        return fallback_action(sample);
+    }
+
     constructor(script) {
         const [processedScript, entryMemory] = LILA.#preprocess(script);
 
@@ -360,26 +372,28 @@ export class LILA {
                 readToken(['line break']);
 
                 if (destination.type === 'identifier')
-                    this.#pushCode(
+                    return [
                         () => {
                             if (!(destination.value in jumpAdresses))
                                 throw ReferenceError(`On line ${this.#debugLine}; Attempted jump to undefined or invalid label "${destination.value}".`);
 
                             if (!condition || condition())
                                 this.codePointer = jumpAdresses[destination.value];
-                        }, lineNumber - 1,
-                    );
-                else
-                    this.#pushCode(
-                        () => {
-                            if (!condition || condition()) {
-                                this.codePointer = this.retrieve(destination);
+                        },
+                        lineNumber - 1,
+                    ];
 
-                                if (this.codePointer < 0 || this.codePointer > this.#code.length)
-                                    throw RangeError(`On line ${this.#debugLine}; Jumped out-of-bounds due to the given address pointing outside the code space.`);
-                            }
-                        }, lineNumber - 1,
-                    );
+                return [
+                    () => {
+                        if (!condition || condition()) {
+                            this.codePointer = this.retrieve(destination);
+
+                            if (this.codePointer < 0 || this.codePointer > this.#code.length)
+                                throw RangeError(`On line ${this.#debugLine}; Jumped out-of-bounds due to the given address pointing outside the code space.`);
+                        }
+                    },
+                    lineNumber - 1,
+                ];
             };
 
             if (peekToken().type === 'line break') {
@@ -399,58 +413,55 @@ export class LILA {
             }
 
             if (peekToken().type === 'identifier') {
-                let destination;
-                let source;
-                let value1;
-                let value2;
-
-                switch (readToken(['identifier']).value.toUpperCase()) {
-                    case 'MOV':
-                    case 'MOVE':
-                        destination = readToken(['identifier', 'address']);
+                const [code, code_line_number] = this.#matchHelper(
+                    readToken(['identifier']).value.toUpperCase(),
+                    () => {
+                        throw SyntaxError(`On line ${lineNumber}; Invalid token sequence ${tokens.slice(i - 1).map(token => LILA.#getTokenInfo(token)).join(', ')}.`);
+                    },
+                    [['MOV', 'MOVE'], () => {
+                        const destination = readToken(['identifier', 'address']);
 
                         readToken(['comma']);
-                        
-                        source = readToken(['identifier', 'address', 'number']);
+
+                        const source = readToken(['identifier', 'address', 'number']);
 
                         readToken(['line break']);
 
-                        this.#pushCode(
+                        return [
                             () => {
                                 this.move(
                                     destination,
                                     this.retrieve(source),
                                 );
-                            }, lineNumber - 1,
-                        );
-
-                        continue;
-                    case 'LEA':
-                        destination = readToken(['identifier', 'address']);
+                            },
+                            lineNumber - 1,
+                        ]
+                    }],
+                    [['LEA'], () => {
+                        const destination = readToken(['identifier', 'address']);
 
                         readToken(['comma']);
 
-                        source = readToken(['address']);
+                        const source = readToken(['address']);
 
                         readToken(['line break']);
 
-                        this.#pushCode(
+                        return [
                             () => {
                                 this.move(
                                     destination,
                                     parseInt(this.#evaluateExpression(source.value)),
                                 )
-                            }, lineNumber - 1,
-                        );
-
-                        continue;
-                    case 'INC':
-                    case 'INCREMENT':
-                        destination = readToken(['identifier', 'address']);
+                            },
+                            lineNumber - 1,
+                        ];
+                    }],
+                    [['INC', 'INCREMENT'], () => {
+                        const destination = readToken(['identifier', 'address']);
 
                         readToken(['line break']);
 
-                        this.#pushCode(
+                        return [
                             () => {
                                 this.move(
                                     destination,
@@ -458,17 +469,16 @@ export class LILA {
                                         this.retrieve(destination) + 1
                                     ),
                                 );
-                            }, lineNumber - 1,
-                        );
-
-                        continue;
-                    case 'DEC':
-                    case 'DECREMENT':
-                        destination = readToken(['identifier', 'address']);
+                            },
+                            lineNumber - 1,
+                        ];
+                    }],
+                    [['DEC', 'DECREMENT'], () => {
+                        const destination = readToken(['identifier', 'address']);
 
                         readToken(['line break']);
 
-                        this.#pushCode(
+                        return [
                             () => {
                                 this.move(
                                     destination,
@@ -476,20 +486,20 @@ export class LILA {
                                         this.retrieve(destination) - 1
                                     ),
                                 );
-                            }, lineNumber - 1,
-                        );
-
-                        continue;
-                    case 'ADD':
-                        destination = readToken(['identifier', 'address']);
+                            },
+                            lineNumber - 1,
+                        ];
+                    }],
+                    [['ADD'], () => {
+                        const destination = readToken(['identifier', 'address']);
 
                         readToken(['comma']);
 
-                        source = readToken(['identifier', 'address', 'number']);
+                        const source = readToken(['identifier', 'address', 'number']);
 
                         readToken(['line break']);
 
-                        this.#pushCode(
+                        return [
                             () => {
                                 this.move(
                                     destination,
@@ -497,21 +507,20 @@ export class LILA {
                                         this.retrieve(destination) + this.retrieve(source)
                                     ),
                                 );
-                            }, lineNumber - 1,
-                        );
-
-                        continue;
-                    case 'SUB':
-                    case 'SUBTRACT':
-                        destination = readToken(['identifier', 'address']);
+                            },
+                            lineNumber - 1,
+                        ];
+                    }],
+                    [['SUB', 'SUBTRACT'], () => {
+                        const destination = readToken(['identifier', 'address']);
 
                         readToken(['comma']);
 
-                        source = readToken(['identifier', 'address', 'number']);
+                        const source = readToken(['identifier', 'address', 'number']);
 
                         readToken(['line break']);
 
-                        this.#pushCode(
+                        return [
                             () => {
                                 this.move(
                                     destination,
@@ -519,21 +528,20 @@ export class LILA {
                                         this.retrieve(destination) - this.retrieve(source)
                                     ),
                                 );
-                            }, lineNumber - 1,
-                        );
-
-                        continue;
-                    case 'MUL':
-                    case 'MULTIPLY':
-                        destination = readToken(['identifier', 'address']);
+                            },
+                            lineNumber - 1,
+                        ];
+                    }],
+                    [['MUL', 'MULTIPLY'], () => {
+                        const destination = readToken(['identifier', 'address']);
 
                         readToken(['comma']);
 
-                        source = readToken(['identifier', 'address', 'number']);
+                        const source = readToken(['identifier', 'address', 'number']);
 
                         readToken(['line break']);
 
-                        this.#pushCode(
+                        return [
                             () => {
                                 this.move(
                                     destination,
@@ -541,21 +549,20 @@ export class LILA {
                                         this.retrieve(destination) * this.retrieve(source)
                                     ),
                                 );
-                            }, lineNumber - 1,
-                        );
-
-                        continue;
-                    case 'DIV':
-                    case 'DIVIDE':
-                        destination = readToken(['identifier', 'address']);
+                            },
+                            lineNumber - 1,
+                        ];
+                    }],
+                    [['DIV', 'DIVIDE'], () => {
+                        const destination = readToken(['identifier', 'address']);
 
                         readToken(['comma']);
 
-                        source = readToken(['identifier', 'address', 'number']);
+                        const source = readToken(['identifier', 'address', 'number']);
 
                         readToken(['line break']);
 
-                        this.#pushCode(
+                        return [
                             () => {
                                 this.move(
                                     destination,
@@ -563,20 +570,20 @@ export class LILA {
                                         this.retrieve(destination) / this.retrieve(source)
                                     ),
                                 );
-                            }, lineNumber - 1,
-                        );
-
-                        continue;
-                    case 'AND':
-                        destination = readToken(['identifier', 'address']);
+                            },
+                            lineNumber - 1,
+                        ];
+                    }],
+                    [['AND'], () => {
+                        const destination = readToken(['identifier', 'address']);
 
                         readToken(['comma']);
 
-                        source = readToken(['identifier', 'address', 'number']);
+                        const source = readToken(['identifier', 'address', 'number']);
 
                         readToken(['line break']);
 
-                        this.#pushCode(
+                        return [
                             () => {
                                 this.move(
                                     destination,
@@ -584,41 +591,41 @@ export class LILA {
                                         this.retrieve(destination) & this.retrieve(source)
                                     ),
                                 );
-                            }, lineNumber - 1,
-                        );
-
-                        continue;
-                    case 'OR':
-                        destination = readToken(['identifier', 'address']);
+                            },
+                            lineNumber - 1,
+                        ];
+                    }],
+                    [['OR'], () => {
+                        const destination = readToken(['identifier', 'address']);
 
                         readToken(['comma']);
 
-                        source = readToken(['identifier', 'address', 'number']);
+                        const source = readToken(['identifier', 'address', 'number']);
 
                         readToken(['line break']);
 
-                        this.#pushCode(
-                            () => {                                
+                        return [
+                            () => {
                                 this.move(
                                     destination,
                                     this.#adjustFlags(
                                         this.retrieve(destination) | this.retrieve(source)
                                     ),
                                 );
-                            }, lineNumber - 1,
-                        );
-
-                        continue;
-                    case 'XOR':
-                        destination = readToken(['identifier', 'address']);
+                            },
+                            lineNumber - 1,
+                        ];
+                    }],
+                    [['XOR'], () => {
+                        const destination = readToken(['identifier', 'address']);
 
                         readToken(['comma']);
 
-                        source = readToken(['identifier', 'address', 'number']);
+                        const source = readToken(['identifier', 'address', 'number']);
 
                         readToken(['line break']);
 
-                        this.#pushCode(
+                        return [
                             () => {
                                 this.move(
                                     destination,
@@ -626,16 +633,16 @@ export class LILA {
                                         this.retrieve(destination) ^ this.retrieve(source)
                                     ),
                                 );
-                            }, lineNumber - 1,
-                        );
-
-                        continue;
-                    case 'NOT':
-                        destination = readToken(['identifier', 'address']);
+                            },
+                            lineNumber - 1,
+                        ];
+                    }],
+                    [['NOT'], () => {
+                        const destination = readToken(['identifier', 'address']);
 
                         readToken(['line break']);
 
-                        this.#pushCode(
+                        return [
                             () => {
                                 this.move(
                                     destination,
@@ -643,17 +650,16 @@ export class LILA {
                                         ~this.retrieve(destination)
                                     ),
                                 );
-                            }, lineNumber - 1,
-                        );
-
-                        continue;
-                    case 'NEG':
-                    case 'NEGATE':
-                        destination = readToken(['identifier', 'address']);
+                            },
+                            lineNumber - 1,
+                        ];
+                    }],
+                    [['NEG', 'NEGATE'], () => {
+                        const destination = readToken(['identifier', 'address']);
 
                         readToken(['line break']);
 
-                        this.#pushCode(
+                        return [
                             () => {
                                 this.move(
                                     destination,
@@ -661,21 +667,20 @@ export class LILA {
                                         this.retrieve(destination) * -1
                                     ),
                                 );
-                            }, lineNumber - 1,
-                        );
-
-                        continue;
-                    case 'SAL':
-                    case 'SHL':
-                        destination = readToken(['identifier', 'address']);
+                            },
+                            lineNumber - 1,
+                        ];
+                    }],
+                    [['SAL', 'SHL'], () => {
+                        const destination = readToken(['identifier', 'address']);
 
                         readToken(['comma']);
 
-                        source = readToken(['identifier', 'address', 'number']);
+                        const source = readToken(['identifier', 'address', 'number']);
 
                         readToken(['line break']);
 
-                        this.#pushCode(
+                        return [
                             () => {
                                 this.move(
                                     destination,
@@ -683,20 +688,20 @@ export class LILA {
                                         this.retrieve(destination) << this.retrieve(source)
                                     ),
                                 );
-                            }, lineNumber - 1,
-                        );
-
-                        continue;
-                    case 'SAR':
-                        destination = readToken(['identifier', 'address']);
+                            },
+                            lineNumber - 1,
+                        ];
+                    }],
+                    [['SAR'], () => {
+                        const destination = readToken(['identifier', 'address']);
 
                         readToken(['comma']);
 
-                        source = readToken(['identifier', 'address', 'number']);
+                        const source = readToken(['identifier', 'address', 'number']);
 
                         readToken(['line break']);
 
-                        this.#pushCode(
+                        return [
                             () => {
                                 this.move(
                                     destination,
@@ -704,20 +709,20 @@ export class LILA {
                                         this.retrieve(destination) >> this.retrieve(source)
                                     ),
                                 );
-                            }, lineNumber - 1,
-                        );
-
-                        continue;
-                    case 'SHR':
-                        destination = readToken(['identifier', 'address']);
+                            },
+                            lineNumber - 1,
+                        ];
+                    }],
+                    [['SHR'], () => {
+                        const destination = readToken(['identifier', 'address']);
 
                         readToken(['comma']);
 
-                        source = readToken(['identifier', 'address', 'number']);
+                        const source = readToken(['identifier', 'address', 'number']);
 
                         readToken(['line break']);
 
-                        this.#pushCode(
+                        return [
                             () => {
                                 this.move(
                                     destination,
@@ -725,21 +730,20 @@ export class LILA {
                                         this.retrieve(destination) >>> this.retrieve(source)
                                     ),
                                 );
-                            }, lineNumber - 1,
-                        );
-
-                        continue;
-                    case 'XCHG':
-                    case 'EXCHANGE':
-                        destination = readToken(['identifier', 'address']);
+                            },
+                            lineNumber - 1,
+                        ];
+                    }],
+                    [['XCHG', 'EXCHANGE'], () => {
+                        const destination = readToken(['identifier', 'address']);
 
                         readToken(['comma']);
 
-                        source = readToken(['identifier', 'address']);
+                        const source = readToken(['identifier', 'address']);
 
                         readToken(['line break']);
 
-                        this.#pushCode(
+                        return [
                             () => {
                                 const temp = this.retrieve(destination);
 
@@ -752,84 +756,82 @@ export class LILA {
                                     source,
                                     temp,
                                 );
-                            }, lineNumber - 1,
-                        );
-
-                        continue;
-                    case 'CMP':
-                    case 'COMPARE':
-                        value1 = readToken(['identifier', 'address', 'number']);
+                            },
+                            lineNumber - 1,
+                        ];
+                    }],
+                    [['CMP', 'COMPARE'], () => {
+                        const value1 = readToken(['identifier', 'address', 'number']);
 
                         readToken(['comma']);
 
-                        value2 = readToken(['identifier', 'address', 'number']);
+                        const value2 = readToken(['identifier', 'address', 'number']);
 
                         readToken(['line break']);
 
-                        this.#pushCode(
+                        return [
                             () => {
                                 this.#adjustFlags(
                                     this.retrieve(value1) - this.retrieve(value2)
                                 );
-                            }, lineNumber - 1,
-                        );
-
-                        continue;
-                    case 'TEST':
-                        value1 = readToken(['identifier', 'address', 'number']);
+                            },
+                            lineNumber - 1,
+                        ];
+                    }],
+                    [['TEST'], () => {
+                        const value1 = readToken(['identifier', 'address', 'number']);
 
                         readToken(['comma']);
 
-                        value2 = readToken(['identifier', 'address', 'number']);
+                        const value2 = readToken(['identifier', 'address', 'number']);
 
                         readToken(['line break']);
 
-                        this.#pushCode(
+                        return [
                             () => {
                                 this.#adjustFlags(
                                     this.retrieve(value1) & this.retrieve(value2)
                                 );
-                            }, lineNumber - 1,
-                        );
-
-                        continue;
-                    case 'PSH':
-                    case 'PUSH':
-                        value1 = readToken(['identifier', 'address', 'number']);
+                            },
+                            lineNumber - 1,
+                        ];
+                    }],
+                    [['PSH', 'PUSH'], () => {
+                        const value1 = readToken(['identifier', 'address', 'number']);
 
                         readToken(['line break']);
 
-                        this.#pushCode(
+                        return [
                             () => {
                                 this.#pushHelper(
                                     this.retrieve(value1)
                                 );
-                            }, lineNumber - 1,
-                        );
-
-                        continue;
-                    case 'POP':
-                        destination = readToken(['identifier', 'address']);
+                            },
+                            lineNumber - 1,
+                        ];
+                    }],
+                    [['POP'], () => {
+                        const destination = readToken(['identifier', 'address']);
 
                         readToken(['line break']);
 
-                        this.#pushCode(
+                        return [
                             () => {
                                 this.move(
                                     destination,
                                     this.#popHelper(),
                                 );
-                            }, lineNumber - 1,
-                        );
-
-                        continue;
-                    case 'CALL':
-                        destination = readToken(['identifier', 'number', 'address']);
+                            },
+                            lineNumber - 1,
+                        ];
+                    }],
+                    [['CALL'], () => {
+                        const destination = readToken(['identifier', 'number', 'address']);
 
                         readToken(['line break']);
 
                         if (destination.type === 'identifier')
-                            this.#pushCode(
+                            return [
                                 () => {
                                     if (!(destination.value in jumpAdresses))
                                         throw ReferenceError(`On line ${this.#debugLine}; Attempted call to undefined subroutine "${destination.value}".`);
@@ -837,102 +839,91 @@ export class LILA {
                                     this.#pushHelper(this.#oldCodePointer + 1);
 
                                     this.codePointer = jumpAdresses[destination.value];
-                                }, lineNumber - 1,
-                            );
-                        else
-                            this.#pushCode(
-                                () => {
-                                    this.#pushHelper(this.#oldCodePointer + 1);
+                                },
+                                lineNumber - 1,
+                            ];
 
-                                    this.codePointer = this.retrieve(destination);
+                        return [
+                            () => {
+                                this.#pushHelper(this.#oldCodePointer + 1);
 
-                                    if (this.codePointer < 0 || this.codePointer > this.#code.length)
-                                        throw RangeError(`On line ${this.#debugLine}; Jumped out-of-bounds due to the given address pointing outside the code space.`);
-                                }, lineNumber - 1,
-                            );
+                                this.codePointer = this.retrieve(destination);
 
-                        continue;
-                    case 'RET':
-                    case 'RETURN':
+                                if (this.codePointer < 0 || this.codePointer > this.#code.length)
+                                    throw RangeError(`On line ${this.#debugLine}; Jumped out-of-bounds due to the given address pointing outside the code space.`);
+                            },
+                            lineNumber - 1,
+                        ];
+                    }],
+                    [['RET', 'RETURN'], () => {
                         readToken(['line break']);
 
-                        this.#pushCode(
+                        return [
                             () => {
                                 this.codePointer = this.#popHelper();
 
                                 if (this.codePointer < 0 || this.codePointer > this.#code.length)
                                     throw RangeError(`On line ${this.#debugLine}; Jumped out-of-bounds due to the return address on top of the stack pointing outside the code space.`);
-                            }, lineNumber - 1,
-                        );
-
-                        continue;
-                    case 'EXIT':
+                            },
+                            lineNumber - 1,
+                        ];
+                    }],
+                    [['EXIT'], () => {
                         readToken(['line break']);
 
-                        this.#pushCode(
+                        return [
                             () => {
                                 this.codePointer = this.#code.length;
-                            }, lineNumber - 1,
-                        );
+                            },
+                            lineNumber - 1,
+                        ];
+                    }],
+                    [['JMP', 'JUMP'], () => readJump(null)],
+                    [[
+                        'JE', // jump if equal
+                        'JZ', // jump if zero
+                    ], () => readJump(() => this.flags.zf)],
+                    [[
+                        'JNE', // jump if not equal
+                        'JNZ', // jump if not zero
+                    ], () => readJump(() => !this.flags.zf)],
+                    [[
+                        'JS', // jump if sign
+                        'JL', // jump if less
+                        'JNGE', // jump if not greater or equal
+                    ], () => readJump(() => this.flags.sf)],
+                    [[
+                        'JNS', // jump if not sign
+                        'JGE', // jump if greater or equal
+                        'JNL', // jump if not lesser
+                    ], () => readJump(() => !this.flags.sf)],
+                    [[
+                        'JG', // jump if greater
+                        'JNLE', // jump if not less or equal
+                    ], () => readJump(() => !this.flags.sf && !this.flags.zf)],
+                    [[
+                        'JLE', // jump if less or equal
+                        'JNG', // jump if not greater
+                    ], () => readJump(() => this.flags.sf || this.flags.zf)],
+                    [[
+                        'JI', // jump if integral
+                    ], () => readJump(() => this.flags.if)],
+                    [[
+                        'JNI', // jump if not integral
+                    ], () => readJump(() => !this.flags.if)],
+                    [[
+                        'JF',// jump if finite
+                    ], () => readJump(() => this.flags.ff)],
+                    [[
+                        'JNF', // jump if not finite
+                    ], () => readJump(() => !this.flags.ff)],
+                );
 
-                        continue;
-                    case 'JMP':
-                    case 'JUMP':
-                        readJump(null);
-
-                        continue;
-                    case 'JE': // jump if equal
-                    case 'JZ': // jump if zero
-                        readJump(() => this.flags.zf);
-
-                        continue;
-                    case 'JNE': // jump if not equal
-                    case 'JNZ': // jump if not zero
-                        readJump(() => !this.flags.zf);
-
-                        continue;
-                    case 'JS': // jump if sign
-                    case 'JL': // jump if less
-                    case 'JNGE': // jump if not greater or equal
-                        readJump(() => this.flags.sf);
-
-                        continue;
-                    case 'JNS': // jump if not sign
-                    case 'JGE': // jump if greater or equal
-                    case 'JNL': // jump if not lesser
-                        readJump(() => !this.flags.sf);
-
-                        continue;
-                    case 'JG': // jump if greater
-                    case 'JNLE': // jump if not less or equal
-                        readJump(() => !this.flags.sf && !this.flags.zf);
-
-                        continue;
-                    case 'JLE': // jump if less or equal
-                    case 'JNG': // jump if not greater
-                        readJump(() => this.flags.sf || this.flags.zf);
-
-                        continue;
-                    case 'JI': // jump if integral
-                        readJump(() => this.flags.if);
-
-                        continue;
-                    case 'JNI': // jump if not integral
-                        readJump(() => !this.flags.if);
-
-                        continue;
-                    case 'JF': // jump if finite
-                        readJump(() => this.flags.ff);
-
-                        continue;
-                    case 'JNF': // jump if not finite
-                        readJump(() => !this.flags.ff);
-
-                        continue;
-                }
+                this.#pushCode(
+                    code,
+                    code_line_number,
+                );
             }
-
-            throw SyntaxError(`On line ${lineNumber}; Invalid token sequence ${tokens.slice(i - 1).map(token => LILA.#getTokenInfo(token)).join(', ')}.`);
         }
 
         this.#codeEntry = jumpAdresses['_start'];
