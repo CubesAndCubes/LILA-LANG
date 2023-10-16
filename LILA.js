@@ -1,5 +1,19 @@
 /* LILA | Low-Level Instruction Language | Copyright (c) 2023 CubesAndCubes */
 
+class Token {
+    type;
+    value;
+
+    /**
+     * @param {string} type 
+     * @param {any} value 
+     */
+    constructor(type, value) {
+        this.type = type;
+        this.value = value;
+    }
+}
+
 export class LILA {
     flags = {
         zf: true, // Zero Flag
@@ -35,23 +49,22 @@ export class LILA {
 
     registers = Object.assign({}, LILA.registers);
 
-    #addressFrom(value) {
-        return {
-            type: 'address',
-            value: value,
-        };
-    }
-
     #pushHelper(value) {
         this.move(
-            this.#addressFrom(--this.registers.sreg),
+            new Token(
+                'address',
+                --this.registers.sreg,
+            ),
             value,
         );
     }
 
     #popHelper() {
         return this.retrieve(
-            this.#addressFrom(this.registers.sreg++)
+            new Token(
+                'address',
+                this.registers.sreg++,
+            )
         );
     }
 
@@ -231,10 +244,10 @@ export class LILA {
                     if (tokenType === 'line break')
                         lineNumber++;
 
-                    result.push({
-                        type: tokenType,
-                        value: match,
-                    });
+                    result.push(new Token(
+                        tokenType,
+                        match,
+                    ));
 
                     break;
                 }
