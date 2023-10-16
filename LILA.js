@@ -251,14 +251,14 @@ export class LILA {
 
     codePointer = 0;
 
-    #oldCodePointer = 0;
+    #previous_code_pointer = 0;
 
     #code = [];
 
     #codeDebugLineReferences = [];
 
     get #debugLine() {        
-        return this.#codeDebugLineReferences[this.#oldCodePointer];
+        return this.#codeDebugLineReferences[this.#previous_code_pointer];
     }
 
     #pushCode(code, sourceCodeLineNumber) {
@@ -283,7 +283,7 @@ export class LILA {
         this.codePointer = this.#codeEntry;
 
         while(this.#code.length > this.codePointer) {
-            this.#code[this.#oldCodePointer = this.codePointer++]();
+            this.#code[this.#previous_code_pointer = this.codePointer++]();
         }
 
         return this.state;
@@ -766,13 +766,13 @@ export class LILA {
                                 if (!(destination.value in jumpAdresses))
                                     throw ReferenceError(`On line ${this.#debugLine}; Attempted call to undefined subroutine "${destination.value}".`);
 
-                                this.#pushHelper(this.#oldCodePointer + 1);
+                                this.#pushHelper(this.#previous_code_pointer + 1);
 
                                 this.codePointer = jumpAdresses[destination.value];
                             };
 
                         return () => {
-                            this.#pushHelper(this.#oldCodePointer + 1);
+                            this.#pushHelper(this.#previous_code_pointer + 1);
 
                             this.codePointer = this.retrieve(destination);
 
