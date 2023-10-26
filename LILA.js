@@ -188,7 +188,7 @@ export class LILA {
 
             script[lineNumber] = script[lineNumber].replace(/^[^\S\n]*([_A-Za-z][_A-Za-z\d]*):\s*(\d+(\.\d+)?)\s*$/gm, (match, identifier, content) => {
                 if (identifier[0] === '_')
-                    throw SyntaxError(`On line ${lineNumber + 1}; The macro label "${identifier}" may not start with an underscore. Identifiers starting with underscores are reserved for built-in functions.`);
+                    throw SyntaxError(`On line ${lineNumber + 1}; The macro label "${identifier}" may not start with an underscore. Identifiers starting with underscores are reserved for integrated functions.`);
 
                 if (Object.keys(LILA.registers).includes(identifier.toLowerCase()))
                     throw SyntaxError(`On line ${lineNumber + 1}; The macro label "${identifier}" conflicts with the identifier of a register.`);
@@ -777,13 +777,13 @@ export class LILA {
                         if (destination.type === 'identifier') {
                             const call_to_builtin = destination.value[0] === '_';
 
-                            if (call_to_builtin && !(destination.value in this.#builtin_functions))
-                                throw ReferenceError(`On line ${lineNumber}; Attempted call to undefined built-in function "${destination.value}".`);
+                            if (call_to_builtin && !(destination.value in this.#integrated_functions))
+                                throw ReferenceError(`On line ${lineNumber}; Attempted call to undefined integrated function "${destination.value}".`);
 
                             readToken(['line break']);
 
                             if (call_to_builtin)
-                                return this.#builtin_functions[destination.value];
+                                return this.#integrated_functions[destination.value];
 
                             return () => {
                                 if (!(destination.value in jumpAdresses))
@@ -880,7 +880,7 @@ export class LILA {
         this.#codeEntry = jumpAdresses['_start'];
     }
 
-    #builtin_functions = {
+    #integrated_functions = {
         '_print': () => {
             const message_pointer = this.registers.areg;
             const message_length = this.registers.breg;
