@@ -108,6 +108,10 @@ export class LILA {
     static #preprocess(script) {
         const entryMemory = {};
 
+        // crlf to lf
+
+        script = script.replace(/\r\n/g, '\n');
+
         // remove comments
 
         script = script.replace(/;.*/g, '');
@@ -294,8 +298,6 @@ export class LILA {
             this.registers[register] = 0;
 
         this.codePointer = this.#codeEntry;
-
-        console.log(this.#code);
 
         while(this.#code.length > this.codePointer) {
             this.#code[this.#previous_code_pointer = this.codePointer++]();
