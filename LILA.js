@@ -776,13 +776,15 @@ export class LILA {
                     [['CALL'], () => {
                         const destination = readToken(['identifier', 'number', 'address']);
 
-                        if (destination.value[0] === '_' && !(destination.value in this.#builtin_functions))
-                            throw ReferenceError(`On line ${lineNumber}; Attempted call to undefined built-in function "${destination.value}".`);
-
-                        readToken(['line break']);
-
                         if (destination.type === 'identifier') {
-                            if (destination.value[0] === '_')
+                            const call_to_builtin = destination.value[0] === '_';
+
+                            if (call_to_builtin && !(destination.value in this.#builtin_functions))
+                                throw ReferenceError(`On line ${lineNumber}; Attempted call to undefined built-in function "${destination.value}".`);
+
+                            readToken(['line break']);
+
+                            if (call_to_builtin)
                                 return this.#builtin_functions[destination.value];
 
                             return () => {
@@ -794,6 +796,8 @@ export class LILA {
                                 this.codePointer = jumpAdresses[destination.value];
                             };
                         }
+
+                        readToken(['line break']);
 
                         return () => {
                             this.#pushHelper(this.#previous_code_pointer + 1);
