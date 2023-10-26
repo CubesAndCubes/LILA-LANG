@@ -1,6 +1,11 @@
 import { LILA } from './LILA.js';
 
-window.myProgram = new LILA(await (await fetch('./example.lila')).text());
+try {
+    window.myProgram = new LILA(await (await fetch('./example.lila')).text());
+}
+catch(e) {
+    console.error(e);
+}
 
 const codeinput = document.getElementById('codeinput');
 const codeoutput = document.getElementById('codeoutput');
