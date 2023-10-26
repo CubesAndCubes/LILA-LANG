@@ -873,7 +873,7 @@ export class LILA {
     }
 
     #builtin_functions = {
-        '_write': () => {
+        '_print': () => {
             const message_pointer = this.registers.areg;
             const message_length = this.registers.breg;
 

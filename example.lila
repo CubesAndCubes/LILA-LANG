@@ -10,21 +10,21 @@ _start:                        ; label '_start' = code address
   SUB  [foo], 8                ; subtract immediate value 8 from value at address 'foo'
   MOV  areg, [foo]             ; move value at address 'foo' to 'areg' register
 
-  CALL writeHello              ; call 'writeHello' subroutine
+  CALL printHello              ; call 'printHello' subroutine
 
   EXIT                         ; exit program with return being value in 'areg' register
 
-writeHello:                    ; label 'writeHello' = code address
+printHello:                    ; label 'printHello' = code address
 
   ; preserve 'areg' and 'breg' registers in stack
 
   PUSH areg                    ; push value in 'areg' register to stack
   PUSH breg                    ; push value in 'breg' register to stack
 
-  MOV  areg, hello             ; address to string to write
-  MOV  breg, helloLen          ; length of string to write
+  MOV  areg, hello             ; address to string to print
+  MOV  breg, helloLen          ; length of string to print
 
-  ; CALL _write                  ; call 'write' function
+  CALL _print                  ; call 'print' function
 
   ; restore 'areg' and 'breg' registers from stack
 
