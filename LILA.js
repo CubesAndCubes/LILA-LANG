@@ -776,31 +776,14 @@ export class LILA {
                     [['CALL'], () => {
                         const destination = readToken(['identifier', 'number', 'address']);
 
+                        if (destination.value[0] === '_' && !(destination.value in this.#builtin_functions))
+                            throw ReferenceError(`On line ${lineNumber}; Attempted call to undefined built-in function "${destination.value}".`);
+
                         readToken(['line break']);
 
                         if (destination.type === 'identifier') {
-                            if (destination.value[0] === '_') {
-                                const builtins = {
-                                    '_write': () => {
-                                        const message_pointer = this.registers.areg;
-                                        const message_length = this.registers.breg;
-
-                                        let message = '';
-
-                                        for (let i = 0; message_length > i; i++)
-                                            message += String.fromCharCode(
-                                                this.memory[message_pointer + i]
-                                            );
-
-                                        console.log(message);
-                                    },
-                                }
-
-                                if (!(destination.value in builtins))destination.value
-                                    throw SyntaxError(`On line ${lineNumber}; Attempted call to undefined built-in function "${destination.value}".`);
-
-                                return builtins[destination.value];
-                            }
+                            if (destination.value[0] === '_')
+                                return this.#builtin_functions[destination.value];
 
                             return () => {
                                 if (!(destination.value in jumpAdresses))
@@ -887,5 +870,21 @@ export class LILA {
         }
 
         this.#codeEntry = jumpAdresses['_start'];
+    }
+
+    #builtin_functions = {
+        '_write': () => {
+            const message_pointer = this.registers.areg;
+            const message_length = this.registers.breg;
+
+            let message = '';
+
+            for (let i = 0; message_length > i; i++)
+                message += String.fromCharCode(
+                    this.memory[message_pointer + i]
+                );
+
+            console.log(message);
+        },
     }
 }
