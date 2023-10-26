@@ -153,7 +153,7 @@ export class LILA {
 
             script[lineNumber] = script[lineNumber].replace(
                 /[_A-Za-z][_A-Za-z\d]*(?!.*:)/g,
-                identifier => labels[identifier] ?? identifier,
+                identifier => labels[identifier.toUpperCase()] ?? identifier,
             );
 
             // evaluate arithmetic expressions
@@ -191,11 +191,11 @@ export class LILA {
                     throw SyntaxError(`On line ${lineNumber + 1}; The macro label "${identifier}" may not start with an underscore. Identifiers starting with underscores are reserved for integrated functions.`);
 
                 if (Object.keys(LILA.registers).includes(identifier.toLowerCase()))
-                    throw SyntaxError(`On line ${lineNumber + 1}; The macro label "${identifier}" conflicts with the identifier of a register.`);
+                    throw SyntaxError(`On line ${lineNumber + 1}; The macro label "${identifier}" is in conflict with the identifier of a register.`);
 
                 content = content.trim();
 
-                labels[identifier] = content;
+                labels[identifier.toUpperCase()] = content;
 
                 return '';
             });
@@ -361,7 +361,7 @@ export class LILA {
         );
 
         const jumpAdresses = {
-            '_start': this.#codeEntry
+            '_START': this.#codeEntry
         };
 
         let lineNumber = 1;
@@ -388,14 +388,17 @@ export class LILA {
 
                 readToken(['line break']);
 
-                if (destination.type === 'identifier')
+                if (destination.type === 'identifier') {
+                    const destination_value = destination.value.toUpperCase();
+
                     return () => {
-                        if (!(destination.value in jumpAdresses))
+                        if (!(destination_value in jumpAdresses))
                             throw ReferenceError(`On line ${this.#debugLine}; Attempted jump to undefined or invalid label "${destination.value}".`);
 
                         if (!condition || condition())
-                            this.codePointer = jumpAdresses[destination.value];
+                            this.codePointer = jumpAdresses[destination_value];
                     };
+                }
 
                 return () => {
                     if (!condition || condition()) {
@@ -417,7 +420,7 @@ export class LILA {
                 const labelToken = readToken(['jumplabel']);
 
                 if (readToken(['line break'])) {
-                    jumpAdresses[labelToken.value] = this.#code.length;
+                    jumpAdresses[labelToken.value.toUpperCase()] = this.#code.length;
 
                     continue;
                 }
@@ -775,23 +778,25 @@ export class LILA {
                         const destination = readToken(['identifier', 'number', 'address']);
 
                         if (destination.type === 'identifier') {
+                            const destination_value = destination.value.toUpperCase();
+
                             const call_to_builtin = destination.value[0] === '_';
 
-                            if (call_to_builtin && !(destination.value in this.#integrated_functions))
+                            if (call_to_builtin && !(destination_value in this.#integrated_functions))
                                 throw ReferenceError(`On line ${lineNumber}; Attempted call to undefined integrated function "${destination.value}".`);
 
                             readToken(['line break']);
 
                             if (call_to_builtin)
-                                return this.#integrated_functions[destination.value];
+                                return this.#integrated_functions[destination_value];
 
                             return () => {
-                                if (!(destination.value in jumpAdresses))
+                                if (!(destination_value in jumpAdresses))
                                     throw ReferenceError(`On line ${this.#debugLine}; Attempted call to undefined subroutine "${destination.value}".`);
 
                                 this.#pushHelper(this.#previous_code_pointer + 1);
 
-                                this.codePointer = jumpAdresses[destination.value];
+                                this.codePointer = jumpAdresses[destination_value];
                             };
                         }
 
@@ -877,11 +882,11 @@ export class LILA {
             throw SyntaxError(`On line ${lineNumber}; Invalid token sequence ${tokens.slice(i - 1).map(token => LILA.#getTokenInfo(token)).join(', ')}.`);
         }
 
-        this.#codeEntry = jumpAdresses['_start'];
+        this.#codeEntry = jumpAdresses['_START'];
     }
 
     #integrated_functions = {
-        '_print': () => {
+        '_PRINT': () => {
             const message_pointer = this.registers.areg;
             const message_length = this.registers.breg;
 
