@@ -24,7 +24,7 @@ writeHello:                    ; label 'writeHello' = code address
   MOV  areg, hello             ; address to string to write
   MOV  breg, helloLen          ; length of string to write
 
-  CALL _write                  ; call 'write' function
+  ; CALL _write                  ; call 'write' function
 
   ; restore 'areg' and 'breg' registers from stack
 

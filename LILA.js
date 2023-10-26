@@ -184,7 +184,7 @@ export class LILA {
 
             script[lineNumber] = script[lineNumber].replace(/^[^\S\n]*([_A-Za-z][_A-Za-z\d]*):\s*(\d+(\.\d+)?)\s*$/gm, (match, identifier, content) => {
                 if (identifier[0] === '_')
-                    throw SyntaxError(`On line ${lineNumber + 1}; The macro label "${identifier}" may not start with an underscore. Identifiers starting with underscores are reserved.`);
+                    throw SyntaxError(`On line ${lineNumber + 1}; The macro label "${identifier}" may not start with an underscore. Identifiers starting with underscores are reserved for built-in functions.`);
 
                 if (Object.keys(LILA.registers).includes(identifier.toLowerCase()))
                     throw SyntaxError(`On line ${lineNumber + 1}; The macro label "${identifier}" conflicts with the identifier of a register.`);
@@ -294,6 +294,8 @@ export class LILA {
             this.registers[register] = 0;
 
         this.codePointer = this.#codeEntry;
+
+        console.log(this.#code);
 
         while(this.#code.length > this.codePointer) {
             this.#code[this.#previous_code_pointer = this.codePointer++]();
@@ -774,7 +776,30 @@ export class LILA {
 
                         readToken(['line break']);
 
-                        if (destination.type === 'identifier')
+                        if (destination.type === 'identifier') {
+                            if (destination.value[0] === '_') {
+                                const builtins = {
+                                    '_write': () => {
+                                        const message_pointer = this.registers.areg;
+                                        const message_length = this.registers.breg;
+
+                                        let message = '';
+
+                                        for (let i = 0; message_length > i; i++)
+                                            message += String.fromCharCode(
+                                                this.memory[message_pointer + i]
+                                            );
+
+                                        console.log(message);
+                                    },
+                                }
+
+                                if (!(destination.value in builtins))destination.value
+                                    throw SyntaxError(`On line ${lineNumber}; Attempted call to undefined built-in function "${destination.value}".`);
+
+                                return builtins[destination.value];
+                            }
+
                             return () => {
                                 if (!(destination.value in jumpAdresses))
                                     throw ReferenceError(`On line ${this.#debugLine}; Attempted call to undefined subroutine "${destination.value}".`);
@@ -783,6 +808,7 @@ export class LILA {
 
                                 this.codePointer = jumpAdresses[destination.value];
                             };
+                        }
 
                         return () => {
                             this.#pushHelper(this.#previous_code_pointer + 1);
