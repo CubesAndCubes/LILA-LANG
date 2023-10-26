@@ -426,9 +426,7 @@ export class LILA {
             if (peekToken().type === 'identifier') {
                 const code = this.#matchHelper(
                     readToken(['identifier']).value.toUpperCase(),
-                    () => {
-                        throw SyntaxError(`On line ${lineNumber}; Invalid token sequence ${tokens.slice(i - 1).map(token => LILA.#getTokenInfo(token)).join(', ')}.`);
-                    },
+                    () => null,
                     [['MOV', 'MOVE'], () => {
                         const destination = readToken(['identifier', 'address']);
 
@@ -866,11 +864,17 @@ export class LILA {
                     ], () => readJump(() => !this.flags.ff)],
                 );
 
-                this.#pushCode(
-                    code,
-                    lineNumber - 1,
-                );
+                if (code) {
+                    this.#pushCode(
+                        code,
+                        lineNumber - 1,
+                    );
+
+                    continue;
+                }
             }
+
+            throw SyntaxError(`On line ${lineNumber}; Invalid token sequence ${tokens.slice(i - 1).map(token => LILA.#getTokenInfo(token)).join(', ')}.`);
         }
 
         this.#codeEntry = jumpAdresses['_start'];
