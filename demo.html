@@ -22,6 +22,13 @@
                 overflow-wrap: normal;
             }
 
+            button {
+                font-family: 'Lucida Console';
+                color: #9da5b4;
+                background: none;
+                border: 1px solid #9da5b4;
+            }
+
             .error {
                 border: 1px solid #b0005e;
                 white-space: break-spaces;
@@ -32,6 +39,14 @@
     </head>
     <body>
         <textarea id="codeinput" spellcheck="false"></textarea>
+        <div>
+            <button id="code-execute">Execute</button>
+            <label>
+                Re-execute while typing
+
+                <input id="code-auto-execute" type="checkbox">
+            </label>
+        </div>
         <pre id="codeoutput"></pre>
     </body>
 </html>

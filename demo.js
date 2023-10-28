@@ -9,8 +9,11 @@ catch(e) {
 
 const codeinput = document.getElementById('codeinput');
 const codeoutput = document.getElementById('codeoutput');
+const codeexecute = document.getElementById('code-execute');
+const codeautoexecute = document.getElementById('code-auto-execute');
 
-const generateStateInfo = state => `<b><u>REGISTERS</u></b>
+const generateStateInfo = state => `
+<b><u>REGISTERS</u></b>
 
 <b>areg</b>: ${state.registers.areg}
 <b>breg</b>: ${state.registers.breg}
@@ -34,7 +37,8 @@ ${Object.keys(
     (x, y) => x - y
 ).map(
     address => `${(address > -1) ? ' ' : ''}<b>${address}</b>: ${state.memory[address]}`
-).join('\n')}`;
+).join('\n')}
+`.trim();
 
 codeinput.addEventListener('keydown', e => {
     if (e.key !== 'Tab')
@@ -50,7 +54,7 @@ codeinput.addEventListener('keydown', e => {
     codeinput.selectionStart = codeinput.selectionEnd = start + 1;
 });
 
-codeinput.oninput = () => {
+const execprogram = () => {
     let program;
 
     try {
@@ -67,9 +71,22 @@ codeinput.oninput = () => {
 
         codeoutput.innerHTML = generateStateInfo(output);
     }
-    catch(e) {
-        codeoutput.innerHTML = `<div class="error">${e}</div>
+    catch (e) {
+        codeoutput.innerHTML = `
+<div class="error">${e}</div>
 
-${generateStateInfo(program.state)}`;
+${generateStateInfo(program.state)}
+        `.trim();
     }
 }
+
+codeexecute.addEventListener('click', () => {
+    execprogram();
+});
+
+codeautoexecute.addEventListener('input', () => {
+    if (codeautoexecute.checked)
+        codeinput.addEventListener('input', execprogram);
+    else
+        codeinput.removeEventListener('input', execprogram);
+});
