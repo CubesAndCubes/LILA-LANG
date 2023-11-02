@@ -39,6 +39,8 @@ export function register_token_type(type_name, type_matcher) {
         throw SyntaxError('Token type name already in use.');
 
     TokenTypes[type_name] = type_matcher;
+
+    return type_name;
 }
 
 /**
