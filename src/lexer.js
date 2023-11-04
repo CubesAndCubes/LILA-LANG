@@ -1,3 +1,5 @@
+import * as token_definitons from './token_definitions.js';
+
 /**
  * A fragment of the source code.
  */
@@ -22,26 +24,6 @@ export class Token {
 }
 
 /**
- * Registered types of tokens.
- * 
- * @type {Map<Symbol, RegExp>}
- */
-const TokenTypes = new Map();
-
-/**
- * Registers a new token type.
- * 
- * @param {RegExp} type_matcher 
- */
-export function register_token_type(type_matcher) {
-    const type_symbol = Symbol();
-
-    TokenTypes.set(type_symbol, type_matcher);
-
-    return type_symbol;
-}
-
-/**
  * Separates a given source into tokens.
  * 
  * @param {string} source 
@@ -59,7 +41,7 @@ export function tokenize(source) {
         let match = null;
         let match_type = null;
 
-        for (const [token_type, token_matcher] of TokenTypes.entries()) {
+        for (const [token_type, token_matcher] of token_definitons.get_definitions()) {
             match = source.match(token_matcher)?.[0] ?? null;
 
             if (match) {
