@@ -54,12 +54,14 @@ export function tokenize(source) {
         if (!match)
             throw SyntaxError(`(line ${line}:${column}); Unknown token (${source.trim()}).`);
 
-        const old_line = line;
-        const old_column = column;
+        // remember current line and column
+        const current_line = line;
+        const current_column = column;
 
         // slice off the match from the source buffer
         source = source.slice(match.length);
 
+        // advance columns
         column += match.length;
 
         if (match_type === token_definitons.whitespace)
@@ -67,6 +69,7 @@ export function tokenize(source) {
         else if (match_type === token_definitons.comment)
             continue; // discard
         else if (match_type === token_definitons.line_break) {
+            // advance line
             line++;
             column = 1;
 
@@ -76,14 +79,14 @@ export function tokenize(source) {
             match = match.slice(1, -1); // strip quotes
         }
         else if (match_type === token_definitons.number) {
-            match = Number(match);
+            match = Number(match); // parse to number
         }
 
         Tokens.push(new Token(
             match_type,
             match,
-            old_line,
-            old_column,
+            current_line,
+            current_column,
         ));
     }
 
