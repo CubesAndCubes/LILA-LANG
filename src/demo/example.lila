@@ -1,0 +1,34 @@
+foo:      RESC 1               ; label 'foo' = address to 1 chunk of reserved memory
+
+hello:    DEFC "Hello, World!" ; label 'hello' = address to 13 chunks of pre-defined memory
+helloLen: $ - hello            ; label 'helloLen' = constant result of current memory length subtracted by value of 'hello'
+
+_start:                        ; label '_start' = code address
+
+  MOV  [foo], 5                ; move immediate value 5 to address 'foo'
+  ADD  [foo], 3                ; add immediate value 3 to address 'foo'
+  SUB  [foo], 8                ; subtract immediate value 8 from value at address 'foo'
+  MOV  areg, [foo]             ; move value at address 'foo' to 'areg' register
+
+  CALL printHello              ; call 'printHello' subroutine
+
+  EXIT                         ; exit program with return being value in 'areg' register
+
+printHello:                    ; label 'printHello' = code address
+
+  ; preserve 'areg' and 'breg' registers in stack
+
+  PUSH areg                    ; push value in 'areg' register to stack
+  PUSH breg                    ; push value in 'breg' register to stack
+
+  MOV  areg, hello             ; address to string to print
+  MOV  breg, helloLen          ; length of string to print
+
+  CALL _print                  ; call 'print' function
+
+  ; restore 'areg' and 'breg' registers from stack
+
+  POP breg                    ; pop value from stack to 'breg' register
+  POP areg                    ; pop value from stack to 'areg' register
+
+  RET                         ; return to call address on stack
