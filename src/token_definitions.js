@@ -42,7 +42,7 @@ export const number = define_type(
 );
 
 export const string = define_type(
-    /^"[^"]+"|'[^']+'/,
+    /^("[^"]+"|'[^']+')/,
 );
 
 export const line_break = define_type(
