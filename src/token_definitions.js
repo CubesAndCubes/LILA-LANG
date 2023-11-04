@@ -58,7 +58,7 @@ export const closing_square_bracket = define_type(
 );
 
 export const operator = define_type(
-    /^\+|\-|\*|\/|\%/,
+    /^(\+|\-|\*|\/|\%)/,
 );
 
 export const comma = define_type(
