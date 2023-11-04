@@ -24,23 +24,21 @@ export class Token {
 /**
  * Registered types of tokens.
  * 
- * @type {{string: RegExp}}
+ * @type {Map<Symbol, RegExp>}
  */
-const TokenTypes = {};
+const TokenTypes = new Map();
 
 /**
  * Registers a new token type.
  * 
- * @param {string} type_name 
  * @param {RegExp} type_matcher 
  */
-export function register_token_type(type_name, type_matcher) {
-    if (type_name in TokenTypes)
-        throw SyntaxError('Token type name already in use.');
+export function register_token_type(type_matcher) {
+    const type_symbol = Symbol();
 
-    TokenTypes[type_name] = type_matcher;
+    TokenTypes.set(type_symbol, type_matcher);
 
-    return type_name;
+    return type_symbol;
 }
 
 /**
@@ -61,7 +59,7 @@ export function tokenize(source) {
         let match = null;
         let match_type = null;
 
-        for (const [token_type, token_matcher] of Object.entries(TokenTypes)) {
+        for (const [token_type, token_matcher] of TokenTypes.entries()) {
             match = source.match(token_matcher)?.[0] ?? null;
 
             if (match) {
