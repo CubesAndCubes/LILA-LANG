@@ -54,14 +54,36 @@ export function tokenize(source) {
         if (!match)
             throw SyntaxError(`(line ${line}:${column}); Unknown token (${source.trim()}).`);
 
+        const old_line = line;
+        const old_column = column;
+
         // slice off the match from the source buffer
         source = source.slice(match.length);
+
+        column += match.length;
+
+        if (match_type === token_definitons.whitespace)
+            continue; // discard
+        else if (match_type === token_definitons.comment)
+            continue; // discard
+        else if (match_type === token_definitons.line_break) {
+            line++;
+            column = 1;
+
+            continue; // discard
+        }
+        else if (match_type === token_definitons.string) {
+            match = match.slice(1, -1); // strip quotes
+        }
+        else if (match_type === token_definitons.number) {
+            match = Number(match);
+        }
 
         Tokens.push(new Token(
             match_type,
             match,
-            line,
-            column,
+            old_line,
+            old_column,
         ));
     }
 
