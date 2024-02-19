@@ -10,8 +10,8 @@ export class Token {
     column;
 
     /**
-     * @param {string} type 
-     * @param {string} value 
+     * @param {Symbol} type 
+     * @param {*} value 
      * @param {number} line 
      * @param {number} column 
      */
@@ -24,7 +24,7 @@ export class Token {
 }
 
 /**
- * Separates a given source into tokens.
+ * Separates a given source into a sequence of tokens.
  * 
  * @param {string} source 
  */
