@@ -68,13 +68,6 @@ export function tokenize(source) {
             continue; // discard
         else if (match_type === token_definitons.comment)
             continue; // discard
-        else if (match_type === token_definitons.line_break) {
-            // advance line
-            line++;
-            column = 1;
-
-            continue; // discard
-        }
         else if (match_type === token_definitons.string) {
             match = match.slice(1, -1); // strip quotes
         }
@@ -88,6 +81,12 @@ export function tokenize(source) {
             current_line,
             current_column,
         ));
+
+        if (match_type === token_definitons.line_break) {
+            // advance line
+            line++;
+            column = 1;
+        }
     }
 
     return Tokens;
