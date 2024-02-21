@@ -1,4 +1,5 @@
 import * as token_definitons from './token_definitions.js';
+import { format_error } from './helpers.js';
 
 /**
  * A fragment of the source code.
@@ -8,18 +9,21 @@ export class Token {
     value;
     line;
     column;
+    end_column;
 
     /**
      * @param {Symbol} type 
      * @param {*} value 
      * @param {number} line 
      * @param {number} column 
+     * @param {number} end_column 
      */
-    constructor(type, value, line, column) {
+    constructor(type, value, line, column, end_column) {
         this.type = type;
         this.value = value;
         this.line = line;
         this.column = column;
+        this.end_column = end_column;
     }
 }
 
@@ -52,11 +56,12 @@ export function tokenize(source) {
         }
 
         if (!match)
-            throw SyntaxError(`(line ${line}:${column}); Unknown token (${source.trim()}).`);
+            throw SyntaxError(format_error(line, column, `unknown token (${source.trim()}).`));
 
         // remember current line and column
         const current_line = line;
         const current_column = column;
+        const currnet_end_column = column + match.length;
 
         // slice off the match from the source buffer
         source = source.slice(match.length);
@@ -80,6 +85,7 @@ export function tokenize(source) {
             match,
             current_line,
             current_column,
+            currnet_end_column,
         ));
 
         if (match_type === token_definitons.line_break) {

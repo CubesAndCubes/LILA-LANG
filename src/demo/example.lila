@@ -1,4 +1,4 @@
-foo:      RESC 1                   ; label 'foo' = address to 1 chunk of reserved memory
+foo:      RESC 1 * 10 - 9                  ; label 'foo' = address to 1 chunk of reserved memory
 
 hello:    DEFC "Hello, World!", 10 ; label 'hello' = address to 13 chunks of pre-defined memory
 helloLen: $ - hello                ; label 'helloLen' = constant result of current memory length subtracted by value of 'hello'
