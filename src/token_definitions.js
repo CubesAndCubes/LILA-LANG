@@ -33,6 +33,10 @@ export const comment = define_type(
     /^;.*/,
 );
 
+export const operator = define_type(
+    /^(\+|\-|\*|\/|\%)/,
+);
+
 export const identifier = define_type(
     /^[_A-Za-z][_A-Za-z\d]*/,
 );
@@ -55,10 +59,6 @@ export const opening_square_bracket = define_type(
 
 export const closing_square_bracket = define_type(
     /^\]/,
-);
-
-export const operator = define_type(
-    /^(\+|\-|\*|\/|\%)/,
 );
 
 export const comma = define_type(
