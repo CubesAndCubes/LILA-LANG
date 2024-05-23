@@ -899,5 +899,24 @@ export class LILA {
 
             console.log(message);
         },
+        '_READ': () => {
+            const message_pointer = this.registers.creg;
+            const message_length = this.registers.dreg;
+
+            let message = '';
+
+            for (let i = 0; message_length > i; i++)
+                message += String.fromCharCode(
+                    this.memory[message_pointer + i]
+                );
+
+            const input = prompt(message);
+
+            const buffer_pointer = this.registers.areg;
+            const buffer_length = this.registers.breg;
+
+            for (let i = 0; buffer_length > i; i++)
+                this.memory[buffer_pointer + i] = input[i]?.charCodeAt?.(0) ?? 0;
+        },
     }
 }
