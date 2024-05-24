@@ -1,7 +1,7 @@
 import { LILA } from './LILA.js';
 
 try {
-    window.myProgram = new LILA(await (await fetch('./example.lila')).text());
+    window.myProgram = new LILA(await (await fetch('./examples/example.lila')).text());
 }
 catch(e) {
     console.error(e);

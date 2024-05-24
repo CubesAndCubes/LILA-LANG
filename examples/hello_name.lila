@@ -1,0 +1,62 @@
+COPY_STRING:
+    ; areg: char[] = destination
+    ; breg: char[] = source
+    ; creg: number = length
+
+    MOV dreg, 0 ; index
+
+    COPY_STRING_LOOP_CONTINUE:
+
+    CMP dreg, creg
+
+    JE COPY_STRING_LOOP_BREAK
+
+    MOV [areg + dreg], [breg + dreg]
+
+    INC dreg
+
+    JUMP COPY_STRING_LOOP_CONTINUE
+
+    COPY_STRING_LOOP_BREAK:
+
+    RET
+
+_START:
+    prompt: DEFC "Enter your name"
+    prompt_length: $ - prompt
+
+    name: RESC 128
+    name_length: $ - name
+
+    MOV areg, name
+    MOV breg, name_length
+
+    MOV creg, prompt
+    MOV dreg, prompt_length
+
+    CALL _READ
+
+    hello: DEFC "Hello, "
+    hello_length: $ - hello
+
+    hello_name: RESC hello_length + name_length
+    hello_name_length: $ - hello_name
+
+    MOV areg, hello_name
+    MOV breg, hello
+    MOV creg, hello_length
+
+    CALL COPY_STRING
+
+    MOV areg, hello_name + hello_length
+    MOV breg, name
+    MOV creg, name_length
+
+    CALL COPY_STRING
+
+    MOV areg, hello_name
+    MOV breg, hello_name_length
+
+    CALL _PRINT
+
+    EXIT
