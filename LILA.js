@@ -892,12 +892,17 @@ export class LILA {
 
             let message = '';
 
-            for (let i = 0; message_length > i; i++)
-                message += String.fromCharCode(
-                    this.memory[message_pointer + i]
-                );
+            for (let i = 0; message_length > i; i++) {
+                const char = this.memory[message_pointer + i];
 
-            console.log(message);
+                if (!char) {
+                    break;
+                }
+
+                message += String.fromCharCode(char);
+            }
+
+            alert(message);
         },
         '_READ': () => {
             const message_pointer = this.registers.creg;
@@ -905,18 +910,31 @@ export class LILA {
 
             let message = '';
 
-            for (let i = 0; message_length > i; i++)
-                message += String.fromCharCode(
-                    this.memory[message_pointer + i]
-                );
+            for (let i = 0; message_length > i; i++) {
+                const char = this.memory[message_pointer + i] ?? 0;
 
-            const input = prompt(message);
+                if (!char) {
+                    break;
+                }
+
+                message += String.fromCharCode(char);
+            }
+
+            const input = prompt(message) ?? '';
 
             const buffer_pointer = this.registers.areg;
             const buffer_length = this.registers.breg;
 
-            for (let i = 0; buffer_length > i; i++)
-                this.memory[buffer_pointer + i] = input[i]?.charCodeAt?.(0) ?? 0;
+            for (let i = 0; buffer_length > i; i++) {
+                const char = input[i];
+
+                if (char) {
+                    this.memory[buffer_pointer + i] = char.charCodeAt(0);
+                }
+                else {
+                    this.memory[buffer_pointer + i] = 0;
+                }
+            }
         },
     }
 }
