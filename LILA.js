@@ -668,6 +668,20 @@ export class LILA {
                             );
                         };
                     }],
+                    [['TRN', 'TRUNCATE'], () => {
+                        const destination = readToken(['identifier', 'address']);
+
+                        readToken(['line break']);
+
+                        return () => {
+                            this.move(
+                                destination,
+                                this.#adjustFlags(
+                                    Math.floor(this.retrieve(destination))
+                                ),
+                            );
+                        };
+                    }],
                     [['SAL', 'SHL'], () => {
                         const destination = readToken(['identifier', 'address']);
 
