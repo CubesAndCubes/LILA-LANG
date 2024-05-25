@@ -3,6 +3,8 @@ COPY_STRING:
     ; breg: char[] = source
     ; creg: number = length
 
+    PUSH dreg
+
     MOV dreg, 0 ; index
 
     COPY_STRING_LOOP_CONTINUE:
@@ -18,6 +20,8 @@ COPY_STRING:
     JUMP COPY_STRING_LOOP_CONTINUE
 
     COPY_STRING_LOOP_BREAK:
+
+    POP dreg
 
     RET
 
