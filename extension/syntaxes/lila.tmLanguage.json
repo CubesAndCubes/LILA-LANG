@@ -38,7 +38,7 @@
 		},
 		{
 			"name": "entity.name.function.lila",
-			"match": "[_A-Za-z][_A-Za-z\\d]*(?=:[\\s]*$)"
+			"match": "[_A-Za-z][_A-Za-z\\d]*(?=:[\\s]*($|;))"
 		},
 		{
 			"name": "entity.name.function.lila",
