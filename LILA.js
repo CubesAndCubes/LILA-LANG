@@ -105,6 +105,30 @@ export class LILA {
         throw ReferenceError(`On line ${this.#debugLine}; Invalid write destination (${destination.value})`);
     }
 
+    #memoryGet(address) {
+        return this.memory[address] ?? 0;
+    }
+
+    #memorySet(address, value) {
+        this.memory[address] = value;
+    }
+    
+    #getString(address, length) {
+        let message = '';
+
+        for (let i = 0; length > i; i++) {
+            const char = this.#memoryGet(address + i);
+
+            if (!char) {
+                break;
+            }
+
+            message += String.fromCharCode(char);
+        }
+
+        return message;
+    }
+
     static #preprocess(script) {
         const entryMemory = {};
 
@@ -890,37 +914,19 @@ export class LILA {
             const message_pointer = this.registers.areg;
             const message_length = this.registers.breg;
 
-            let message = '';
-
-            for (let i = 0; message_length > i; i++) {
-                const char = this.memory[message_pointer + i];
-
-                if (!char) {
-                    break;
-                }
-
-                message += String.fromCharCode(char);
-            }
-
-            alert(message);
+            alert(this.#getString(
+                message_pointer,
+                message_length,
+            ));
         },
         '_READ': () => {
             const message_pointer = this.registers.creg;
             const message_length = this.registers.dreg;
 
-            let message = '';
-
-            for (let i = 0; message_length > i; i++) {
-                const char = this.memory[message_pointer + i] ?? 0;
-
-                if (!char) {
-                    break;
-                }
-
-                message += String.fromCharCode(char);
-            }
-
-            const input = prompt(message) ?? '';
+            const input = prompt(this.#getString(
+                message_pointer,
+                message_length,
+            )) ?? '';
 
             const buffer_pointer = this.registers.areg;
             const buffer_length = this.registers.breg;
@@ -929,10 +935,16 @@ export class LILA {
                 const char = input[i];
 
                 if (char) {
-                    this.memory[buffer_pointer + i] = char.charCodeAt(0);
+                    this.#memorySet(
+                        buffer_pointer + i,
+                        char.charCodeAt(0)
+                    );
                 }
                 else {
-                    this.memory[buffer_pointer + i] = 0;
+                    this.#memorySet(
+                        buffer_pointer + i,
+                        0
+                    );
                 }
             }
         },
