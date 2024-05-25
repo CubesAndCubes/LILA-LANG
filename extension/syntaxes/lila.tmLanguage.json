@@ -1,0 +1,54 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "LILA",
+	"patterns": [
+		{
+			"name": "keyword.pseudo.directive.lila",
+			"match": "(?i)\\b(DEFC|RESC)\\b"
+		},
+		{
+			"name": "keyword.instruction.lila",
+			"match": "(?i)\\b(MOV|MOVE|LEA|INC|INCREMENT|DEC|DECREMENT|ADD|SUB|SUBTRACT|MUL|MULTIPLY|DIV|DIVIDE|AND|OR|XOR|NOT|NEG|NEGATE|SAL|SHL|SAR|SHR|XCHG|EXCHANGE|CMP|COMPARE|TEST|PSH|PUSH|POP|CALL|RET|RETURN|EXIT|JMP|JUMP|JN?E|JN?Z|JN?S|JN?I|JN?F|JN?G|JN?L|JN?GE|JN?LE)\\b"
+		},
+		{
+			"name": "variable.language.lila",
+			"match": "\\B\\$\\B"
+		},
+		{
+			"name": "keyword.operator.lila",
+			"match": "(\\+|\\-|\\*|\\/|%)"
+		},
+		{
+			"name": "string.quoted.double.lila",
+			"begin": "\"",
+			"end": "\""
+		},
+		{
+			"name": "string.quoted.single.lila",
+			"begin": "'",
+			"end": "'"
+		},
+		{
+			"name": "constant.numeric.lila",
+			"match": "\\b\\d+(\\.\\d+)?\\b"
+		},
+		{
+			"name": "comment.line.semi-colon.lila",
+			"match": ";.*$"
+		},
+		{
+			"name": "entity.name.function.lila",
+			"match": "[_A-Za-z][_A-Za-z\\d]*(?=:[\\s]*$)"
+		},
+		{
+			"name": "entity.name.function.lila",
+			"match": "(?i)(?<=\\b(CALL|JMP|JUMP|JN?E|JN?Z|JN?S|JN?I|JN?F|JN?G|JN?L|JN?GE|JN?LE)[^\\n\\S]+)[_A-Za-z][_A-Za-z\\d]*\\b"
+		},
+		{
+			"name": "variable.other.lila",
+			"match": "\\b[_A-Za-z][_A-Za-z\\d]*\\b"
+		}
+	],
+	"repository": {},
+	"scopeName": "source.lila"
+}

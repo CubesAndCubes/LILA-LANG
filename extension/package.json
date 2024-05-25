@@ -1,0 +1,25 @@
+{
+  "name": "lila",
+  "displayName": "LILA",
+  "description": "Light Instruction Language",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.89.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [{
+      "id": "lila",
+      "aliases": ["LILA", "lila"],
+      "extensions": [".lila"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "lila",
+      "scopeName": "source.lila",
+      "path": "./syntaxes/lila.tmLanguage.json"
+    }]
+  }
+}
