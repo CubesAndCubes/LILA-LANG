@@ -34,6 +34,10 @@
                 white-space: break-spaces;
                 overflow-wrap: break-word;
             }
+
+            #code-import-input {
+                display: none;
+            }
         </style>
         <script type="module" src="./demo.js"></script>
     </head>
@@ -41,11 +45,16 @@
         <textarea id="codeinput" spellcheck="false"></textarea>
         <div>
             <button id="code-execute">Execute</button>
+
             <label>
                 Re-execute while typing
 
                 <input id="code-auto-execute" type="checkbox">
             </label>
+
+            <button id="code-import">Import</button>
+
+            <input id="code-import-input" type="file" accept=".lila">
         </div>
         <pre id="codeoutput"></pre>
     </body>

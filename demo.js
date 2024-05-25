@@ -11,6 +11,8 @@ const codeinput = document.getElementById('codeinput');
 const codeoutput = document.getElementById('codeoutput');
 const codeexecute = document.getElementById('code-execute');
 const codeautoexecute = document.getElementById('code-auto-execute');
+const code_import = document.getElementById('code-import');
+const code_import_input = document.getElementById('code-import-input');
 
 const generateStateInfo = state => `
 <b><u>REGISTERS</u></b>
@@ -52,6 +54,26 @@ codeinput.addEventListener('keydown', e => {
     codeinput.value = codeinput.value.substring(0, start) + '\t' + codeinput.value.substring(end);
 
     codeinput.selectionStart = codeinput.selectionEnd = start + 1;
+});
+
+code_import.addEventListener('click', () => {
+    code_import_input.click();
+});
+
+code_import_input.addEventListener('change', () => {
+    const file = code_import_input.files[0];
+
+    if (!file) {
+        return;
+    }
+
+    const Reader = new FileReader();
+
+    Reader.readAsText(file, 'UTF-8');
+
+    Reader.onload = e => {
+        codeinput.value = e.target.result;
+    }
 });
 
 const execprogram = () => {
