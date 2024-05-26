@@ -1,0 +1,212 @@
+_START:
+    operator: RESC 1
+
+    MOV areg, operator
+    MOV breg, 1
+
+    what_operator: DEFC "What operation would you like to perform? (+ - * or /)"
+    what_operator_length: $ - what_operator
+
+    MOV creg, what_operator
+    MOV dreg, what_operator_length
+
+    CALL _READ
+
+    CMP [operator], '+'
+
+    JE VALID_OPERATOR
+
+    CMP [operator], '-'
+
+    JE VALID_OPERATOR
+
+    CMP [operator], '*'
+
+    JE VALID_OPERATOR
+
+    CMP [operator], '/'
+
+    JE VALID_OPERATOR
+
+    invalid_operator: DEFC "Invalid operator: %"
+    invalid_operator_length: $ - invalid_operator
+
+    MOV [invalid_operator + invalid_operator_length - 1], [operator]
+
+    MOV areg, invalid_operator
+    MOV breg, invalid_operator_length
+
+    CALL _PRINT
+
+    JMP _START
+
+    VALID_OPERATOR:
+
+    number_buffer: RESC 32
+    number_buffer_length: $ - first_number
+
+    MOV areg, number_buffer
+    MOV breg, number_buffer_length
+
+    first_number_prompt: DEFC "Enter first number:"
+    first_number_prompt_length: $ - first_number_prompt
+
+    MOV creg, first_number_prompt
+    MOV dreg, first_number_prompt_length
+
+    CALL _READ
+
+    MOV breg, number_buffer
+    MOV creg, number_buffer_length
+
+    CALL COUNT_STRING_LENGTH
+
+    MOV breg, number_buffer
+    MOV creg, areg
+
+    CALL STRING_TO_INTEGER
+
+    PUSH areg ; first number
+
+    MOV areg, number_buffer
+    MOV breg, number_buffer_length
+
+    second_number_prompt: DEFC "Enter second number:"
+    second_number_prompt_length: $ - second_number_prompt
+
+    MOV creg, second_number_prompt
+    MOV dreg, second_number_prompt_length
+
+    CALL _READ
+
+    MOV breg, number_buffer
+    MOV creg, number_buffer_length
+
+    CALL COUNT_STRING_LENGTH
+
+    MOV breg, number_buffer
+    MOV creg, areg
+
+    CALL STRING_TO_INTEGER
+
+    MOV breg, areg
+    POP areg
+
+    CMP [operator], '+'
+
+    JE DO_ADD
+
+    CMP [operator], '-'
+
+    JE DO_SUB
+
+    CMP [operator], '*'
+
+    JE DO_MUL
+
+    ; do division
+
+    DIV areg, breg
+
+    JMP SHOW_RESULT
+
+    DO_ADD:
+
+    ADD areg, breg
+
+    JMP SHOW_RESULT
+
+    DO_SUB:
+
+    SUB areg, breg
+
+    JMP SHOW_RESULT
+
+    DO_MUL:
+
+    MUL areg, breg
+
+    JMP SHOW_RESULT
+
+    SHOW_RESULT:
+
+    EXIT
+
+COUNT_STRING_LENGTH:
+    ; areg: number = result
+
+    ; breg: char[] = source
+    ; creg: number = length
+
+    MOV areg, 0 
+
+    COUNT_STRING_LENGTH_CONTINUE:
+
+    CMP areg, creg
+
+    JE COUNT_STRING_LENGTH_BREAK
+
+    CMP [breg + areg], 0
+
+    JE COUNT_STRING_LENGTH_BREAK
+
+    INC areg
+
+    JMP COUNT_STRING_LENGTH_CONTINUE
+
+    COUNT_STRING_LENGTH_BREAK:
+
+    RET
+
+STRING_TO_INTEGER:
+    ; areg: number = result
+
+    ; breg: char[] = source
+    ; creg: number = digits
+
+    ; preserve registers
+
+    PUSH dreg
+    PUSH freg
+
+    ; logic
+
+    MOV freg, sreg ; stack frame
+
+    PUSH 0 ; temp 1
+    PUSH 0 ; temp 2
+
+    MOV areg, 0
+    MOV dreg, 0 ; index
+
+    STRING_TO_INTEGER_CONTINUE:
+
+    CMP dreg, creg
+
+    JE STRING_TO_INTEGER_BREAK
+
+    MOV [freg - 1], [breg + dreg]
+
+    SUB [freg - 1], 48 ; convert char to number
+
+    LEA [freg - 2], [10 ** (creg - dreg - 1)]
+
+    MUL [freg - 1], [freg - 2]
+
+    ADD areg, [freg - 1]
+
+    INC dreg
+
+    JMP STRING_TO_INTEGER_CONTINUE
+
+    STRING_TO_INTEGER_BREAK:
+
+    POP freg ; free temp 2
+    POP freg ; free temp 1
+
+    ; restore registers
+
+    POP freg
+    POP dreg
+
+    RET

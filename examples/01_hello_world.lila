@@ -1,0 +1,7 @@
+hello_world: DEFC "Hello, World!"
+hello_world_length: $ - hello_world
+
+MOV areg, hello_world
+MOV breg, hello_world_length
+
+CALL _PRINT
