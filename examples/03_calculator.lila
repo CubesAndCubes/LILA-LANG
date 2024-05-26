@@ -43,7 +43,7 @@ _START:
     VALID_OPERATOR:
 
     number_buffer: RESC 32
-    number_buffer_length: $ - first_number
+    number_buffer_length: $ - number_buffer
 
     MOV areg, number_buffer
     MOV breg, number_buffer_length
@@ -187,7 +187,7 @@ STRING_TO_INTEGER:
 
     MOV [freg - 1], [breg + dreg]
 
-    SUB [freg - 1], 48 ; convert char to number
+    SUB [freg - 1], '0' ; convert char to number
 
     LEA [freg - 2], [10 ** (creg - dreg - 1)]
 
