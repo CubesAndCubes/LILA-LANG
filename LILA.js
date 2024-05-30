@@ -189,7 +189,7 @@ export class LILA {
 
             // REServe Chunks (pesudo instruction)
 
-            script[lineNumber] = script[lineNumber].replace(/RESC[^\S\n]+(\d+(\.\d+)?)/gi, (match, chunks) => {
+            script[lineNumber] = script[lineNumber].replace(/\bRESC[^\S\n]+(\d+(\.\d+)?)/gi, (match, chunks) => {
                 const pointer = allocationPointer;
 
                 allocationPointer += Number(parseInt(chunks));
@@ -199,7 +199,7 @@ export class LILA {
 
             // DEFine Chunks (pseudo instruction)
 
-            script[lineNumber] = script[lineNumber].replace(/DEFC[^\S\n]+(\d+(\.\d+)?([^\S\n]*,[^\S\n]*\d+(\.\d+)?)*)/gi, (match, chunks) => {
+            script[lineNumber] = script[lineNumber].replace(/\bDEFC[^\S\n]+(\d+(\.\d+)?([^\S\n]*,[^\S\n]*\d+(\.\d+)?)*)/gi, (match, chunks) => {
                 const pointer = allocationPointer;
 
                 for (const value of chunks.match(/\d+(\.\d+)?/g) ?? [])
