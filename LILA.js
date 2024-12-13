@@ -69,7 +69,7 @@ export class LILA {
     }
 
     retrieve(source) {
-        switch(source.type) {
+        switch (source.type) {
             case 'address':
                 return this.memory[
                     parseInt(this.#evaluateExpression(source.value))
@@ -82,7 +82,7 @@ export class LILA {
                 if (source.value.toLowerCase?.() in this.registers)
                     return this.registers[source.value.toLowerCase()] ?? 0;
         }
-        
+
         throw ReferenceError(`On line ${this.#debugLine}; Invalid retrieval source (${source.value})`);
     }
 
@@ -91,7 +91,7 @@ export class LILA {
             case 'address':
                 return void (
                     this.memory[
-                        parseInt(this.#evaluateExpression(destination.value))
+                    parseInt(this.#evaluateExpression(destination.value))
                     ] = value
                 );
 
@@ -112,7 +112,7 @@ export class LILA {
     #memorySet(address, value) {
         this.memory[address] = value;
     }
-    
+
     #getString(address, length) {
         let message = '';
 
@@ -259,7 +259,7 @@ export class LILA {
 
                     if (tokenType === 'whitespace')
                         break;
-                    
+
                     if (tokenType === 'jumplabel')
                         match = match.slice(0, -1);
 
@@ -298,7 +298,7 @@ export class LILA {
 
     #codeDebugLineReferences = [];
 
-    get #debugLine() {        
+    get #debugLine() {
         return this.#codeDebugLineReferences[this.#previous_code_pointer];
     }
 
@@ -323,7 +323,7 @@ export class LILA {
 
         this.codePointer = this.#codeEntry;
 
-        while(this.#code.length > this.codePointer) {
+        while (this.#code.length > this.codePointer) {
             this.#code[this.#previous_code_pointer = this.codePointer++]();
         }
 
@@ -857,6 +857,24 @@ export class LILA {
 
                             if (this.codePointer < 0 || this.codePointer > this.#code.length)
                                 throw RangeError(`On line ${this.#debugLine}; Jumped out-of-bounds due to the return address on top of the stack pointing outside the code space.`);
+                        };
+                    }],
+                    [['ENTER'], () => {
+                        readToken(['line break']);
+
+                        return () => {
+                            this.#pushHelper(
+                                this.registers.freg,
+                            );
+
+                            this.registers.freg = this.registers.sreg;
+                        };
+                    }],
+                    [['LEAVE'], () => {
+                        readToken(['line break']);
+
+                        return () => {
+                            this.registers.freg = this.#popHelper();
                         };
                     }],
                     [['EXIT'], () => {

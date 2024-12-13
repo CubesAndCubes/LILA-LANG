@@ -167,11 +167,8 @@ STRING_TO_INTEGER:
     ; preserve registers
 
     PUSH dreg
-    PUSH freg
-
-    ; logic
-
-    MOV freg, sreg ; stack frame
+    
+    ENTER
 
     PUSH 0 ; temp 1
     PUSH 0 ; temp 2
@@ -206,7 +203,8 @@ STRING_TO_INTEGER:
 
     ; restore registers
 
-    POP freg
+    LEAVE
+
     POP dreg
 
     RET
