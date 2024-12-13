@@ -1,0 +1,47 @@
+_START:
+    ; get the 19nth number of the fibonacci sequence
+
+    MOV areg, 19
+
+    CALL FIBONACCI
+
+    EXIT
+
+FIBONACCI:
+    ; areg: number = index
+
+    ; dreg: number = result
+
+    CMP areg, 1
+
+    JG FIBONACCI_CONTINUE
+
+    MOV dreg, areg
+
+    RET
+
+    FIBONACCI_CONTINUE:
+
+    PUSH areg
+
+    DEC areg
+
+    CALL FIBONACCI
+
+    PUSH breg
+
+    PUSH dreg
+
+    DEC areg
+
+    CALL FIBONACCI
+
+    POP breg
+
+    ADD dreg, breg
+
+    POP breg
+
+    POP areg
+
+    RET
