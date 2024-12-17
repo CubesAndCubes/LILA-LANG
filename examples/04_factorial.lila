@@ -1,0 +1,29 @@
+_START:
+    MOV areg, 5
+
+    CALL FACTORIAL
+
+    EXIT
+
+FACTORIAL:
+    PUSH areg
+
+    MOV dreg, areg
+
+    FACTORIAL_CONTINUE:
+
+    CMP areg, 2
+
+    JLE FACTORIAL_BREAK
+
+    DEC areg
+
+    MUL dreg, areg
+
+    JMP FACTORIAL_CONTINUE
+
+    FACTORIAL_BREAK:
+
+    POP areg
+
+    RET
