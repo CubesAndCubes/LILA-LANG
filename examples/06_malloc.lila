@@ -1,0 +1,253 @@
+MEM: RESC 1000
+
+MEM_SIZE: $ - MEM
+
+MEM_BLOCK_STARTS: RESC MEM_SIZE
+
+MEM_BLOCK_ENDS: RESC MEM_SIZE
+
+MALLOC:
+    ; areg: number = chunks
+
+    ; breg: address = pointer
+
+    PUSH creg
+
+    PUSH dreg
+
+    MOV breg, 0
+
+    MOV creg, 0
+
+    ; find free space
+
+    JMP ALLOC_BEGIN
+
+    ALLOC_TRY_NEXT:
+
+    MOV creg, [MEM_BLOCK_ENDS + breg]
+
+    INC breg
+
+    CMP breg, MEM_SIZE ; entire memory occupied?
+
+    JGE ALLOC_ERROR
+
+    CMP creg, [MEM_BLOCK_STARTS + breg - 1] ; is null space?
+
+    JE ALLOC_TRY_NEXT ; bad space, try next
+
+    ALLOC_BEGIN:
+
+    ADD creg, areg
+
+    CMP creg, MEM_SIZE ; will overflow?
+
+    JGE ALLOC_TRY_NEXT ; bad space, try next
+
+    MOV dreg, breg
+
+    DEC dreg
+
+    ALLOC_CONTINUE:
+
+    INC dreg
+
+    CMP dreg, MEM_SIZE ; memory completely scanned?
+
+    JGE ALLOC_BREAK ; success
+
+    CMP [MEM_BLOCK_STARTS + dreg], [MEM_BLOCK_ENDS + dreg] ; is null block?
+
+    JE ALLOC_CONTINUE ; all good, check next block
+
+    PUSH creg
+
+    SUB creg, areg
+
+    CMP creg, [MEM_BLOCK_ENDS + dreg] ; is space beyond block?
+
+    POP creg
+
+    JGE ALLOC_CONTINUE ; all good, check next block
+
+    CMP creg, [MEM_BLOCK_STARTS + dreg] ; will space overlap with block?
+
+    JG ALLOC_TRY_NEXT ; bad space, try next
+
+    JMP ALLOC_CONTINUE ; all good, check next block
+
+    ALLOC_BREAK:
+
+    ; store new memory block start and end
+
+    MOV dreg, 0
+
+    ALLOC_LOOKUP_CONTINUE:
+
+    CMP [MEM_BLOCK_STARTS + dreg], [MEM_BLOCK_ENDS + dreg]
+
+    JE ALLOC_LOOKUP_BREAK
+
+    INC dreg
+
+    CMP dreg, MEM_SIZE ; entire memory occupied?
+
+    JGE ALLOC_ERROR
+
+    JMP ALLOC_LOOKUP_CONTINUE
+
+    ALLOC_LOOKUP_BREAK:
+
+    MOV [MEM_BLOCK_ENDS + dreg], MEM
+
+    ADD [MEM_BLOCK_ENDS + dreg], creg
+
+    MOV [MEM_BLOCK_STARTS + dreg], [MEM_BLOCK_ENDS + dreg]
+
+    SUB [MEM_BLOCK_STARTS + dreg], areg
+
+    MOV breg, [MEM_BLOCK_STARTS + dreg]
+
+    POP dreg
+
+    POP creg
+
+    RET
+
+    ALLOC_ERROR:
+
+    MOV breg, -1
+
+    POP dreg
+
+    POP creg
+
+    RET
+
+FREE:
+    ; areg: address = pointer
+
+    ; breg: boolean = success
+
+    PUSH creg
+
+    MOV creg, 0
+
+    FREE_CONTINUE:
+
+    CMP areg, [MEM_BLOCK_STARTS + creg]
+
+    JE FREE_BREAK
+
+    INC creg
+
+    CMP creg, MEM_SIZE
+
+    JGE FREE_ERROR
+
+    JMP FREE_CONTINUE
+
+    FREE_BREAK:
+
+    MOV [MEM_BLOCK_STARTS + creg], 0
+
+    MOV [MEM_BLOCK_ENDS + creg], 0
+
+    POP creg
+
+    MOV breg, 1
+
+    RET
+
+    FREE_ERROR:
+
+    MOV breg, 0
+
+    RET
+
+MSIZE:
+    ; areg: address = pointer
+
+    ; breg: number = size
+
+    PUSH creg
+
+    MOV creg, 0
+
+    MSIZE_CONTINUE:
+
+    CMP areg, [MEM_BLOCK_STARTS + creg]
+
+    JE MSIZE_BREAK
+
+    INC creg
+
+    CMP creg, MEM_SIZE
+
+    JGE MSIZE_ERROR
+
+    JMP MSIZE_CONTINUE
+
+    MSIZE_BREAK:
+
+    MOV breg, [MEM_BLOCK_ENDS + creg]
+
+    SUB breg, [MEM_BLOCK_STARTS + creg]
+
+    POP creg
+
+    RET
+
+    MSIZE_ERROR:
+
+    POP creg
+
+    MOV breg, -1
+
+    RET
+
+_START:
+    MOV areg, 5
+
+    CALL MALLOC
+
+    MOV areg, 3
+
+    CALL MALLOC
+
+    PUSH breg
+
+    MOV areg, 2
+
+    CALL MALLOC
+
+    POP areg
+
+    CALL FREE
+
+    MOV areg, 5
+
+    CALL MALLOC
+
+    MOV areg, breg
+
+    CALL MSIZE
+
+    CALL _READ
+
+    CALL _PRINT
+
+    CALL FREE
+
+    MOV areg, 3
+
+    CALL MALLOC
+
+    MOV areg, breg
+
+    CALL MSIZE
+
+    CALL _READ
+
+    CALL _PRINT
