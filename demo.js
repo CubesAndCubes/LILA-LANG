@@ -23,6 +23,7 @@ const generateStateInfo = state => `
 <b>dreg</b>: ${state.registers.dreg}
 <b>sreg</b>: ${state.registers.sreg}
 <b>freg</b>: ${state.registers.freg}
+<b>ireg</b>: ${state.registers.ireg}
 
 <b><u>FLAGS</u></b>
 

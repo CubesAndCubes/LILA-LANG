@@ -45,6 +45,7 @@ export class LILA {
         dreg: 0, // Data Register
         sreg: 0, // Stack (Pointer) Register
         freg: 0, // (Stack) Frame (Pointer) Register
+        ireg: 0, // Instruction (Pointer) Register
     };
 
     registers = Object.assign({}, LILA.registers);
@@ -290,8 +291,6 @@ export class LILA {
 
     #codeEntry = 0;
 
-    codePointer = 0;
-
     #previous_code_pointer = 0;
 
     #code = [];
@@ -321,10 +320,10 @@ export class LILA {
         for (const register of Object.keys(this.registers))
             this.registers[register] = 0;
 
-        this.codePointer = this.#codeEntry;
+        this.registers.ireg = this.#codeEntry;
 
-        while (this.#code.length > this.codePointer) {
-            this.#code[this.#previous_code_pointer = this.codePointer++]();
+        while (this.#code.length > this.registers.ireg) {
+            this.#code[this.#previous_code_pointer = this.registers.ireg++]();
         }
 
         return this.state;
@@ -420,15 +419,15 @@ export class LILA {
                             throw ReferenceError(`On line ${this.#debugLine}; Attempted jump to undefined or invalid label "${destination.value}".`);
 
                         if (!condition || condition())
-                            this.codePointer = jumpAdresses[destination_value];
+                            this.registers.ireg = jumpAdresses[destination_value];
                     };
                 }
 
                 return () => {
                     if (!condition || condition()) {
-                        this.codePointer = this.retrieve(destination);
+                        this.registers.ireg = this.retrieve(destination);
 
-                        if (this.codePointer < 0 || this.codePointer > this.#code.length)
+                        if (this.registers.ireg < 0 || this.registers.ireg > this.#code.length)
                             throw RangeError(`On line ${this.#debugLine}; Jumped out-of-bounds due to the given address pointing outside the code space.`);
                     }
                 };
@@ -834,7 +833,7 @@ export class LILA {
 
                                 this.#pushHelper(this.#previous_code_pointer + 1);
 
-                                this.codePointer = jumpAdresses[destination_value];
+                                this.registers.ireg = jumpAdresses[destination_value];
                             };
                         }
 
@@ -843,9 +842,9 @@ export class LILA {
                         return () => {
                             this.#pushHelper(this.#previous_code_pointer + 1);
 
-                            this.codePointer = this.retrieve(destination);
+                            this.registers.ireg = this.retrieve(destination);
 
-                            if (this.codePointer < 0 || this.codePointer > this.#code.length)
+                            if (this.registers.ireg < 0 || this.registers.ireg > this.#code.length)
                                 throw RangeError(`On line ${this.#debugLine}; Jumped out-of-bounds due to the given address pointing outside the code space.`);
                         };
                     }],
@@ -853,9 +852,9 @@ export class LILA {
                         readToken(['line break']);
 
                         return () => {
-                            this.codePointer = this.#popHelper();
+                            this.registers.ireg = this.#popHelper();
 
-                            if (this.codePointer < 0 || this.codePointer > this.#code.length)
+                            if (this.registers.ireg < 0 || this.registers.ireg > this.#code.length)
                                 throw RangeError(`On line ${this.#debugLine}; Jumped out-of-bounds due to the return address on top of the stack pointing outside the code space.`);
                         };
                     }],
@@ -881,7 +880,7 @@ export class LILA {
                         readToken(['line break']);
 
                         return () => {
-                            this.codePointer = this.#code.length;
+                            this.registers.ireg = this.#code.length;
                         };
                     }],
                     [['JMP', 'JUMP'], () => readJump(null)],
