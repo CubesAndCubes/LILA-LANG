@@ -21,9 +21,9 @@ MALLOC:
 
     ; find free space
 
-    JMP ALLOC_BEGIN
+    JMP MALLOC_BEGIN
 
-    ALLOC_TRY_NEXT:
+    MALLOC_TRY_NEXT:
 
     MOV creg, [MEM_BLOCK_ENDS + breg]
 
@@ -31,35 +31,35 @@ MALLOC:
 
     CMP breg, MEM_SIZE ; entire memory occupied?
 
-    JGE ALLOC_ERROR
+    JGE MALLOC_ERROR
 
     CMP creg, [MEM_BLOCK_STARTS + breg - 1] ; is null space?
 
-    JE ALLOC_TRY_NEXT ; bad space, try next
+    JE MALLOC_TRY_NEXT ; bad space, try next
 
-    ALLOC_BEGIN:
+    MALLOC_BEGIN:
 
     ADD creg, areg
 
     CMP creg, MEM_SIZE ; will overflow?
 
-    JGE ALLOC_TRY_NEXT ; bad space, try next
+    JGE MALLOC_TRY_NEXT ; bad space, try next
 
     MOV dreg, breg
 
     DEC dreg
 
-    ALLOC_CONTINUE:
+    MALLOC_CONTINUE:
 
     INC dreg
 
     CMP dreg, MEM_SIZE ; memory completely scanned?
 
-    JGE ALLOC_BREAK ; success
+    JGE MALLOC_BREAK ; success
 
     CMP [MEM_BLOCK_STARTS + dreg], [MEM_BLOCK_ENDS + dreg] ; is null block?
 
-    JE ALLOC_CONTINUE ; all good, check next block
+    JE MALLOC_CONTINUE ; all good, check next block
 
     PUSH creg
 
@@ -69,35 +69,35 @@ MALLOC:
 
     POP creg
 
-    JGE ALLOC_CONTINUE ; all good, check next block
+    JGE MALLOC_CONTINUE ; all good, check next block
 
     CMP creg, [MEM_BLOCK_STARTS + dreg] ; will space overlap with block?
 
-    JG ALLOC_TRY_NEXT ; bad space, try next
+    JG MALLOC_TRY_NEXT ; bad space, try next
 
-    JMP ALLOC_CONTINUE ; all good, check next block
+    JMP MALLOC_CONTINUE ; all good, check next block
 
-    ALLOC_BREAK:
+    MALLOC_BREAK:
 
     ; store new memory block start and end
 
     MOV dreg, 0
 
-    ALLOC_LOOKUP_CONTINUE:
+    MALLOC_LOOKUP_CONTINUE:
 
     CMP [MEM_BLOCK_STARTS + dreg], [MEM_BLOCK_ENDS + dreg]
 
-    JE ALLOC_LOOKUP_BREAK
+    JE MALLOC_LOOKUP_BREAK
 
     INC dreg
 
     CMP dreg, MEM_SIZE ; entire memory occupied?
 
-    JGE ALLOC_ERROR
+    JGE MALLOC_ERROR
 
-    JMP ALLOC_LOOKUP_CONTINUE
+    JMP MALLOC_LOOKUP_CONTINUE
 
-    ALLOC_LOOKUP_BREAK:
+    MALLOC_LOOKUP_BREAK:
 
     MOV [MEM_BLOCK_ENDS + dreg], MEM
 
@@ -115,7 +115,7 @@ MALLOC:
 
     RET
 
-    ALLOC_ERROR:
+    MALLOC_ERROR:
 
     MOV breg, -1
 
