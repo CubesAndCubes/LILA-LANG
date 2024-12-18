@@ -585,6 +585,18 @@ export class LILA {
                             );
                         };
                     }],
+                    [['SQRT'], () => {
+                        const destination = readToken(['identifier', 'address']);
+
+                        readToken(['line break']);
+
+                        return () => {
+                            this.move(
+                                destination,
+                                Math.sqrt(this.retrieve(destination)),
+                            );
+                        };
+                    }],
                     [['AND'], () => {
                         const destination = readToken(['identifier', 'address']);
 
